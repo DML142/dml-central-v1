@@ -3,6 +3,7 @@ import { FrameBox, FrameGrid } from '@/components/layout/FrameGrid';
 import { LocaleSync } from '@/components/layout/LocaleSync';
 import { SideRail } from '@/components/layout/SideRail';
 import { SkipLink } from '@/components/layout/SkipLink';
+import { SmoothScrollHost } from '@/components/layout/SmoothScrollHost';
 import { TopBar } from '@/components/layout/TopBar';
 import { About } from '@/features/about/About';
 import { ContactBand } from '@/features/contact/ContactBand';
@@ -17,6 +18,8 @@ export default function Home() {
     <>
       <LocaleSync />
       <SkipLink />
+
+      <SmoothScrollHost />
 
       <FrameGrid>
         <TopBar />
