@@ -1,0 +1,142 @@
+import { expect, test } from '@playwright/test';
+
+test.describe('page chrome', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/');
+  });
+
+  test('exposes the landmarks and a single level-one heading', async ({ page }) => {
+    await expect(page.getByRole('banner')).toBeVisible();
+    await expect(page.getByRole('main')).toBeVisible();
+    await expect(page.getByRole('contentinfo')).toBeVisible();
+    await expect(page.getByRole('navigation', { name: 'Elsewhere' })).toBeAttached();
+
+    await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
+  });
+
+  test('never skips a heading level', async ({ page }) => {
+    const levels = await page
+      .locator('h1, h2, h3, h4, h5, h6')
+      .evaluateAll((nodes) => nodes.map((node) => Number(node.tagName.slice(1))));
+
+    expect(levels[0]).toBe(1);
+    for (let i = 1; i < levels.length; i += 1) {
+      expect(levels[i]! - levels[i - 1]!).toBeLessThanOrEqual(1);
+    }
+  });
+
+  test('puts the skip link first in the tab order', async ({ page }) => {
+    await page.keyboard.press('Tab');
+
+    const focused = page.locator(':focus');
+    await expect(focused).toHaveText('Skip to content');
+    await expect(focused).toBeInViewport();
+  });
+
+  test('renders the hero field without exposing it to assistive tech', async ({ page }) => {
+    const field = page.locator('svg').first();
+
+    await expect(field).toBeAttached();
+    await expect(field.locator('circle')).toHaveCount(150);
+    await expect(page.locator('[aria-hidden="true"] > svg')).toHaveCount(1);
+  });
+});
+
+test.describe('locale switching', () => {
+  test('swaps the copy and the document language', async ({ page }) => {
+    await page.goto('/');
+
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+      'Full-stack systems that stay up.',
+    );
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+
+    await page.getByRole('button', { name: 'UA' }).click();
+
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Системи, які не падають.');
+    await expect(page.locator('html')).toHaveAttribute('lang', 'uk');
+    await expect(page.getByRole('button', { name: 'UA' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  test('remembers the choice across a reload', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: 'RU' }).click();
+
+    await page.reload();
+
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Системы, которые не падают.');
+    await expect(page.locator('html')).toHaveAttribute('lang', 'ru');
+  });
+
+  test('keeps the reading position instead of jumping to the top', async ({ page }) => {
+    await page.goto('/');
+
+    const before = await page.evaluate(() => {
+      window.scrollTo(0, 400);
+      return { y: window.scrollY, height: document.documentElement.scrollHeight };
+    });
+    expect(before.y).toBeGreaterThan(0);
+
+    // Dispatched rather than clicked: Playwright scrolls a target into view first, which would
+    // move the page itself and hide the behaviour under test.
+    await page.getByRole('button', { name: 'UA' }).dispatchEvent('click');
+    await expect(page.getByRole('button', { name: 'UA' })).toHaveAttribute('aria-pressed', 'true');
+
+    const after = await page.evaluate(() => ({
+      y: window.scrollY,
+      height: document.documentElement.scrollHeight,
+    }));
+
+    // Translated copy is not the same length, so the document reflows and scroll anchoring shifts
+    // the offset to hold the visible content still. Anything beyond that reflow is a real jump.
+    expect(Math.abs(after.y - before.y)).toBeLessThanOrEqual(
+      Math.abs(after.height - before.height),
+    );
+    expect(after.y).toBeGreaterThan(0);
+  });
+});
+
+const WIDTHS = [320, 360, 390, 744, 1024, 1280, 1440, 1920];
+const SWITCHER_LABELS = { en: 'EN', uk: 'UA', ru: 'RU' } as const;
+
+test.describe('responsive', () => {
+  for (const width of WIDTHS) {
+    test(`never scrolls sideways at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/');
+      await page.evaluate(() => document.fonts.ready);
+
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      );
+
+      expect(overflow).toBeLessThanOrEqual(0);
+    });
+  }
+
+  // The Cyrillic type scale check from roadmap 1.8: Oswald is narrower than the Anton it replaced,
+  // and Ukrainian and Russian run longer than the English source.
+  for (const [locale, label] of Object.entries(SWITCHER_LABELS)) {
+    for (const width of [320, 744, 1280]) {
+      test(`holds the type scale in ${locale} at ${width}px`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto('/');
+        await page.getByRole('button', { name: label }).click();
+        await page.evaluate(() => document.fonts.ready);
+
+        const overflow = await page.evaluate(
+          () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        );
+        expect(overflow).toBeLessThanOrEqual(0);
+
+        // The headline is the tightest measure on the page; nothing may spill out of its column.
+        const spill = await page.getByRole('heading', { level: 1 }).evaluate((node) => {
+          const parent = node.parentElement;
+          if (!parent) return 0;
+          return node.getBoundingClientRect().right - parent.getBoundingClientRect().right;
+        });
+        expect(spill).toBeLessThanOrEqual(1);
+      });
+    }
+  }
+});
