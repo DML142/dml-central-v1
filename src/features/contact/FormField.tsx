@@ -21,7 +21,7 @@ export function FormField({ name, label, aside, error, children }: Props) {
   const errorId = `error-${name}`;
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-1.5 md:gap-2">
       <label
         htmlFor={id}
         className="micro text-text-muted flex items-baseline justify-between gap-3"
@@ -40,7 +40,7 @@ export function FormField({ name, label, aside, error, children }: Props) {
         ),
       })}
 
-      <p id={errorId} className="text-danger text-meta min-h-6 font-mono">
+      <p id={errorId} className="text-danger text-meta font-mono md:min-h-6">
         {error}
       </p>
     </div>

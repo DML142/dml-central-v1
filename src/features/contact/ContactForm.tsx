@@ -77,7 +77,7 @@ export function ContactForm({ onSent }: Props) {
       onSubmit={(event) => {
         void onSubmit(event);
       }}
-      className="section-gutter flex flex-col gap-6 py-8"
+      className="section-gutter flex flex-col gap-4 py-4 md:gap-6 md:py-8"
     >
       {failure !== 'none' && (
         <p role="alert" className="border-danger text-danger mono-copy border px-4 py-3">
@@ -140,9 +140,9 @@ export function ContactForm({ onSent }: Props) {
       >
         {({ className, ...props }) => (
           <textarea
-            rows={6}
+            rows={4}
             placeholder={t('form.messagePlaceholder')}
-            className={cn(className, 'min-h-35 resize-y leading-relaxed')}
+            className={cn(className, 'min-h-24 resize-y leading-relaxed md:min-h-35')}
             {...props}
             {...register('message')}
           />

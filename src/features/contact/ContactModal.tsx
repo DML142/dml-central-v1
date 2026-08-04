@@ -22,13 +22,13 @@ export function ContactModal() {
         if (!next) closeContact();
       }}
     >
-      {/* A full-height sheet on a phone and a centred card from `sm` up. Centring it on a small
+      {/* A full-height sheet on a phone and a centred card from `md` up. Centring it on a small
           screen puts its foot under the browser toolbar, where the submit button cannot be
           reached — the containing block of a fixed element is the large viewport, not the visible
           one. */}
       <DialogContent
         aria-describedby={undefined}
-        className="sm:max-w-form sm:inset-auto sm:top-1/2 sm:left-1/2 sm:h-auto sm:w-full sm:-translate-1/2"
+        className="md:max-w-form md:inset-auto md:top-1/2 md:left-1/2 md:h-auto md:w-full md:-translate-1/2"
       >
         <div className="border-line section-gutter flex items-center justify-between gap-4 border-b py-4">
           <DialogTitle>{t('form.title')}</DialogTitle>

@@ -261,12 +261,34 @@ test.describe('contact form on a phone', () => {
       bottom: node.getBoundingClientRect().bottom,
       innerHeight: window.innerHeight,
     }));
-    expect(geometry.bottom).toBeLessThanOrEqual(geometry.innerHeight + 1);
+    // A few pixels of slack: `dvh` and `innerHeight` round differently on a fractional device
+    // pixel ratio. The defect this guards against hid the whole foot of the panel, not three pixels.
+    expect(geometry.bottom).toBeLessThanOrEqual(geometry.innerHeight + 4);
 
     const submit = panel.locator('button[type="submit"]');
     await submit.scrollIntoViewIfNeeded();
 
     await expect(submit).toBeInViewport();
     await expect(page.getByRole('button', { name: /close|закр/i }).first()).toBeInViewport();
+  });
+
+  test('fits on one screen without scrolling', async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'the phone layout is the one that has to earn its height');
+
+    await gotoReady(page, '/');
+    await page
+      .getByRole('button', { name: /contact me now/i })
+      .first()
+      .click();
+    await expect(page.locator('[data-slot="dialog-content"]')).toBeVisible();
+
+    // The body is the only scroller in the panel; needing it on a phone means the form has grown
+    // back past what the screen holds.
+    const body = await page
+      .locator('[data-slot="dialog-content"] > div')
+      .nth(1)
+      .evaluate((node) => ({ content: node.scrollHeight, room: node.clientHeight }));
+
+    expect(body.content).toBeLessThanOrEqual(body.room + 1);
   });
 });
