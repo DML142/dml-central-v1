@@ -73,6 +73,13 @@ tests/unit/        Vitest
 tests/e2e/         Playwright
 ```
 
+## Third-party assets
+
+Stack chip icons are brand marks from [Devicon](https://devicon.dev) (MIT). They are not fetched at
+runtime: `node scripts/build-stack-icons.mjs` copies the cuts the site uses out of the `devicon`
+dev-dependency into `public/icons/stack/`, and the committed files are what ship. Re-run the script
+after changing the icon map at the top of it.
+
 ## Conventions
 
 Husky runs `lint-staged` and `tsc --noEmit` before every commit, and the unit tests before every
