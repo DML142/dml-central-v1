@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { PARTICLE_PROFILES, resolveProfileName } from '@/config/particles';
+import { PARTICLE_PROFILES, resolveFieldBounds, resolveProfileName } from '@/config/particles';
 
 describe('resolveProfileName', () => {
   it('takes the mobile budget below the md breakpoint', () => {
@@ -25,6 +25,26 @@ describe('resolveProfileName', () => {
   it('does not read an unreported core count as weak', () => {
     expect(resolveProfileName({ width: 1920 })).toBe('desktop');
     expect(resolveProfileName({ width: 1920, cores: undefined })).toBe('desktop');
+  });
+});
+
+describe('resolveFieldBounds', () => {
+  it('lands on the 24 x 14 x 12 of tech.md 5.2 at a widescreen aspect', () => {
+    const bounds = resolveFieldBounds(16 / 9);
+
+    // Within 5%: the spec's numbers are the widescreen case of this derivation, not a second source.
+    expect(Math.abs(bounds.width / 24 - 1)).toBeLessThan(0.05);
+    expect(Math.abs(bounds.height / 14 - 1)).toBeLessThan(0.05);
+    expect(bounds.depth).toBe(12);
+  });
+
+  it('narrows the volume with the viewport so a portrait phone sees all of it', () => {
+    const portrait = resolveFieldBounds(0.5);
+    const landscape = resolveFieldBounds(2);
+
+    expect(portrait.width).toBeLessThan(landscape.width);
+    expect(portrait.height).toBe(landscape.height);
+    expect(portrait.width / portrait.height).toBeCloseTo(0.5, 5);
   });
 });
 
