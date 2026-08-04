@@ -1,5 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 
+import { gotoReady } from './support';
+
 /** Samples the scroll offset over twelve frames after one wheel tick. */
 const sampleAfterWheel = (page: Page, deltaY: number) =>
   page.evaluate(async (delta) => {
@@ -16,7 +18,7 @@ const sampleAfterWheel = (page: Page, deltaY: number) =>
 
 test.describe('smooth scroll', () => {
   test('eases the page towards the target instead of jumping', async ({ page }) => {
-    await page.goto('/');
+    await gotoReady(page, '/');
     await page.evaluate(() => document.fonts.ready);
     await page.waitForTimeout(600);
 
@@ -32,9 +34,11 @@ test.describe('smooth scroll', () => {
     }
   });
 
-  test('leaves the sticky rail sticking', async ({ page }) => {
+  test('leaves the sticky rail sticking', async ({ page, isMobile }) => {
+    // The rail only exists from `lg` up, and `mouse.wheel` is not available on a touch context.
+    test.skip(isMobile, 'the rail is collapsed into the top bar below lg');
     await page.setViewportSize({ width: 1280, height: 900 });
-    await page.goto('/');
+    await gotoReady(page, '/');
     await page.evaluate(() => document.fonts.ready);
 
     const brand = page.locator('a[href="#main"]').last();
@@ -51,7 +55,7 @@ test.describe('smooth scroll', () => {
 
   test('holds the frame inset', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
-    await page.goto('/');
+    await gotoReady(page, '/');
 
     const inset = await page.evaluate(() => {
       const frame = document.querySelector('main')?.parentElement;
@@ -62,7 +66,7 @@ test.describe('smooth scroll', () => {
   });
 
   test('stops while a modal owns the scroll', async ({ page }) => {
-    await page.goto('/');
+    await gotoReady(page, '/');
     await page.waitForTimeout(600);
 
     // Playwright scrolls the trigger into view before clicking, so the page is already partway
@@ -88,7 +92,7 @@ test.describe('smooth scroll under reduced motion', () => {
   });
 
   test('does not smooth the scroll at all', async ({ page }) => {
-    await page.goto('/');
+    await gotoReady(page, '/');
     await page.waitForTimeout(600);
 
     const jumped = await page.evaluate(() => {
@@ -101,7 +105,7 @@ test.describe('smooth scroll under reduced motion', () => {
   });
 
   test('still renders every section', async ({ page }) => {
-    await page.goto('/');
+    await gotoReady(page, '/');
 
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Projects', exact: true })).toBeVisible();

@@ -1,16 +1,18 @@
 import { expect, test, type Page } from '@playwright/test';
 
+import { gotoReady } from './support';
+
 test.describe('stack panels', () => {
   test('opens the first panel on desktop and none on mobile', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
-    await page.goto('/');
+    await gotoReady(page, '/');
     await expect(page.getByRole('button', { name: /Frontend/ })).toHaveAttribute(
       'aria-expanded',
       'true',
     );
 
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/');
+    await gotoReady(page, '/');
     await expect(page.getByRole('button', { name: /Frontend/ })).toHaveAttribute(
       'aria-expanded',
       'false',
@@ -18,7 +20,7 @@ test.describe('stack panels', () => {
   });
 
   test('toggles a panel and reports the state', async ({ page }) => {
-    await page.goto('/');
+    await gotoReady(page, '/');
     const trigger = page.getByRole('button', { name: /Backend/ });
 
     await expect(trigger).toHaveAttribute('aria-expanded', 'false');
@@ -31,7 +33,7 @@ test.describe('stack panels', () => {
   });
 
   test('keeps several panels open at once', async ({ page }) => {
-    await page.goto('/');
+    await gotoReady(page, '/');
     await page.getByRole('button', { name: /Backend/ }).click();
     await page.getByRole('button', { name: /Platforms/ }).click();
 
@@ -46,7 +48,7 @@ test.describe('stack panels', () => {
   });
 
   test('operates by keyboard', async ({ page }) => {
-    await page.goto('/');
+    await gotoReady(page, '/');
     const trigger = page.getByRole('button', { name: /Backend/ });
 
     await trigger.focus();
@@ -59,7 +61,7 @@ test.describe('stack panels', () => {
 
   test('opens the panel named in the hash', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/#stack-backend');
+    await gotoReady(page, '/#stack-backend');
 
     await expect(page.getByRole('button', { name: /Backend/ })).toHaveAttribute(
       'aria-expanded',
@@ -74,7 +76,7 @@ test.describe('stack panels', () => {
 
 test.describe('contact form', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await gotoReady(page, '/');
     await page.getByRole('button', { name: 'Contact me now' }).click();
     await expect(page.getByRole('dialog')).toBeVisible();
   });

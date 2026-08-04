@@ -1,12 +1,14 @@
 import { expect, test } from '@playwright/test';
 
+import { gotoReady } from './support';
+
 const LATIN = 'Full-stack systems that stay up';
 // Ukrainian ґ є і ї live in cyrillic-ext, the rest in cyrillic — both subsets have to resolve.
 const CYRILLIC = 'Повностековий Українська Русский ґєії';
 
 test.describe('self-hosted faces', () => {
   test('the display face covers latin and cyrillic', async ({ page }) => {
-    await page.goto('/');
+    await gotoReady(page, '/');
 
     const result = await page.evaluate(async () => {
       await document.fonts.load('700 16px Oswald', 'A Повностековий ґєії');
@@ -24,7 +26,7 @@ test.describe('self-hosted faces', () => {
   });
 
   test('the body and mono faces cover cyrillic', async ({ page }) => {
-    await page.goto('/');
+    await gotoReady(page, '/');
 
     const result = await page.evaluate(
       async ([latin, cyrillic]) => {
@@ -52,7 +54,7 @@ test.describe('self-hosted faces', () => {
   });
 
   test('the headline actually renders in the display face', async ({ page }) => {
-    await page.goto('/');
+    await gotoReady(page, '/');
 
     const heading = page.getByRole('heading', { level: 1 });
     await expect(heading).toHaveCSS('text-transform', 'uppercase');

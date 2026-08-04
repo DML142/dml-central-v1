@@ -1,8 +1,10 @@
 import { expect, test } from '@playwright/test';
 
+import { gotoReady } from './support';
+
 test.describe('page chrome', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await gotoReady(page, '/');
   });
 
   test('exposes the landmarks and a single level-one heading', async ({ page }) => {
@@ -44,7 +46,7 @@ test.describe('page chrome', () => {
 
 test.describe('locale switching', () => {
   test('swaps the copy and the document language', async ({ page }) => {
-    await page.goto('/');
+    await gotoReady(page, '/');
 
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(
       'Full-stack systems that stay up.',
@@ -62,7 +64,7 @@ test.describe('locale switching', () => {
   });
 
   test('remembers the choice across a reload', async ({ page }) => {
-    await page.goto('/');
+    await gotoReady(page, '/');
     await page.getByRole('button', { name: 'RU', exact: true }).click();
 
     await page.reload();
@@ -72,13 +74,13 @@ test.describe('locale switching', () => {
   });
 
   test('keeps the reading position instead of jumping to the top', async ({ page }) => {
-    await page.goto('/');
+    await gotoReady(page, '/');
 
     const before = await page.evaluate(() => {
       window.scrollTo(0, 400);
-      return { y: window.scrollY, height: document.documentElement.scrollHeight };
+      return window.scrollY;
     });
-    expect(before.y).toBeGreaterThan(0);
+    expect(before).toBeGreaterThan(0);
 
     // Dispatched rather than clicked: Playwright scrolls a target into view first, which would
     // move the page itself and hide the behaviour under test.
@@ -88,17 +90,49 @@ test.describe('locale switching', () => {
       'true',
     );
 
-    const after = await page.evaluate(() => ({
-      y: window.scrollY,
-      height: document.documentElement.scrollHeight,
+    // Translated copy is a different length, so the document reflows and each engine's scroll
+    // anchoring compensates by its own amount — Chrome moved 23px here, WebKit 39px. Pinning an
+    // exact offset would be testing the engine. The contract in §19.3 is that the reader keeps
+    // their place: no return to the top, no leap of a screenful.
+    const { after, viewport } = await page.evaluate(() => ({
+      after: window.scrollY,
+      viewport: window.innerHeight,
     }));
 
-    // Translated copy is not the same length, so the document reflows and scroll anchoring shifts
-    // the offset to hold the visible content still. Anything beyond that reflow is a real jump.
-    expect(Math.abs(after.y - before.y)).toBeLessThanOrEqual(
-      Math.abs(after.height - before.height),
+    expect(after).toBeGreaterThan(0);
+    expect(Math.abs(after - before)).toBeLessThan(viewport / 2);
+  });
+
+  test('leaves an open accordion panel open', async ({ page }) => {
+    await gotoReady(page, '/');
+    await page.getByRole('button', { name: /Backend/ }).click();
+    await expect(page.getByRole('button', { name: /Backend/ })).toHaveAttribute(
+      'aria-expanded',
+      'true',
     );
-    expect(after.y).toBeGreaterThan(0);
+
+    await page.getByRole('button', { name: 'UA', exact: true }).click();
+
+    await expect(page.getByRole('button', { name: /Бекенд/ })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+  });
+
+  // §19.3 also says a switch must not close an open modal. That state cannot be reached: a modal
+  // hides the rest of the page from the accessibility tree, so the switcher is not operable while
+  // one is open. What is worth asserting is that it really does hide it.
+  test('is unreachable while a modal owns the page', async ({ page }) => {
+    await gotoReady(page, '/');
+    await expect(page.getByRole('button', { name: 'UA', exact: true })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Contact me now' }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    await expect(page.getByRole('button', { name: 'UA', exact: true })).toHaveCount(0);
+
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('button', { name: 'UA', exact: true })).toBeVisible();
   });
 });
 
@@ -109,7 +143,7 @@ test.describe('responsive', () => {
   for (const width of WIDTHS) {
     test(`never scrolls sideways at ${width}px`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 });
-      await page.goto('/');
+      await gotoReady(page, '/');
       await page.evaluate(() => document.fonts.ready);
 
       const overflow = await page.evaluate(
@@ -126,7 +160,7 @@ test.describe('responsive', () => {
     for (const width of [320, 744, 1280]) {
       test(`holds the type scale in ${locale} at ${width}px`, async ({ page }) => {
         await page.setViewportSize({ width, height: 900 });
-        await page.goto('/');
+        await gotoReady(page, '/');
         await page.getByRole('button', { name: label, exact: true }).click();
         await page.evaluate(() => document.fonts.ready);
 

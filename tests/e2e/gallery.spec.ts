@@ -1,7 +1,9 @@
 import { expect, test, type Page } from '@playwright/test';
 
+import { gotoReady } from './support';
+
 const openGallery = async (page: Page, index = 0) => {
-  await page.goto('/');
+  await gotoReady(page, '/');
   await page.getByRole('button', { name: 'Open gallery' }).nth(index).click();
   await expect(page.getByRole('dialog')).toBeVisible();
 };
@@ -107,7 +109,7 @@ test.describe('gallery modal', () => {
   });
 
   test('restores focus to the trigger and leaves no scroll lock behind', async ({ page }) => {
-    await page.goto('/');
+    await gotoReady(page, '/');
     await page.evaluate(() => {
       window.scrollTo(0, 300);
     });
@@ -153,7 +155,7 @@ test.describe('gallery modal', () => {
   });
 
   test('translates the alt text with the page', async ({ page }) => {
-    await page.goto('/');
+    await gotoReady(page, '/');
     await page.getByRole('button', { name: 'UA', exact: true }).click();
     await page.getByRole('button', { name: 'Відкрити галерею' }).first().click();
 
