@@ -1,3 +1,5 @@
+import { createRandom } from '@/lib/random';
+
 const WIDTH = 1200;
 const HEIGHT = 800;
 const COUNT = 150;
@@ -23,19 +25,6 @@ export interface Constellation {
   height: number;
   points: ConstellationPoint[];
   lines: ConstellationLine[];
-}
-
-/** mulberry32. Seeded so the field is identical on every render and reviewable in a diff. */
-function createRandom(seed: number): () => number {
-  let state = seed >>> 0;
-
-  return () => {
-    state = (state + 0x6d2b79f5) >>> 0;
-    let value = state;
-    value = Math.imul(value ^ (value >>> 15), value | 1);
-    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
-    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
-  };
 }
 
 /**
