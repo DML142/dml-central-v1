@@ -414,6 +414,14 @@
   }
 }
 
+/* `100%` of a fixed element resolves against the large viewport, so on iOS the foot of a dialog
+   sits under the browser toolbar and cannot be reached. `dvh` is the visible height, and the safe
+   area keeps the last control clear of the home indicator (tech.md 12). */
+@utility dialog-surface {
+  max-height: 100dvh;
+  padding-bottom: calc(var(--frame-inset) + env(safe-area-inset-bottom, 0px));
+}
+
 /* The static field is on screen before the Three chunk is even requested, so the canvas fades in
    over it once it has painted a frame and the SVG fades out under it. Nobody sees a load. */
 @utility field-static {

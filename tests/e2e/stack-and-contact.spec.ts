@@ -238,3 +238,35 @@ test.describe('stack icons', () => {
     await expect(page.locator('.stack-icon').first()).toHaveAttribute('aria-hidden', 'true');
   });
 });
+
+test.describe('contact form on a phone', () => {
+  test('keeps the submit button reachable inside the visible viewport', async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(!isMobile, 'the panel is a centred card from sm up, where there is room for it');
+
+    await gotoReady(page, '/');
+    await page
+      .getByRole('button', { name: /contact me now/i })
+      .first()
+      .click();
+
+    const panel = page.locator('[data-slot="dialog-content"]');
+    await expect(panel).toBeVisible();
+
+    // `100%` of a fixed element is the large viewport, which puts the foot of the panel under the
+    // browser toolbar. The panel must end inside the height the reader can actually see.
+    const geometry = await panel.evaluate((node) => ({
+      bottom: node.getBoundingClientRect().bottom,
+      innerHeight: window.innerHeight,
+    }));
+    expect(geometry.bottom).toBeLessThanOrEqual(geometry.innerHeight + 1);
+
+    const submit = panel.locator('button[type="submit"]');
+    await submit.scrollIntoViewIfNeeded();
+
+    await expect(submit).toBeInViewport();
+    await expect(page.getByRole('button', { name: /close|закр/i }).first()).toBeInViewport();
+  });
+});

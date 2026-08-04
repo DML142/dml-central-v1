@@ -48,7 +48,7 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          'border-line bg-surface data-[state=closed]:animate-panel-out data-[state=open]:animate-panel-in fixed inset-0 z-50 flex flex-col border p-(--frame-inset) outline-none',
+          'border-line bg-surface dialog-surface data-[state=closed]:animate-panel-out data-[state=open]:animate-panel-in fixed inset-0 z-50 flex flex-col border p-(--frame-inset) outline-none',
           className,
         )}
         {...props}
