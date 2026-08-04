@@ -89,6 +89,29 @@ describe('stack', () => {
     for (const category of STACK) expect(KEYS.has(category.nameKey), category.id).toBe(true);
   });
 
+  it('ships a mark on disk for every declared icon', () => {
+    for (const category of STACK) {
+      for (const item of category.items) {
+        if (!item.iconId) continue;
+        expect(existsSync(`public/icons/stack/${item.iconId}.svg`), item.id).toBe(true);
+      }
+    }
+  });
+
+  it('declares an icon only for brands that have one', () => {
+    const withIcon = STACK.flatMap((category) =>
+      category.items.filter((item) => item.iconId).map((item) => item.id),
+    );
+
+    expect(withIcon).toHaveLength(21);
+    // The mark is keyed by the item id, so a rename cannot silently orphan a file.
+    for (const category of STACK) {
+      for (const item of category.items) {
+        if (item.iconId) expect(item.iconId).toBe(item.id);
+      }
+    }
+  });
+
   it('keeps item ids unique inside a category', () => {
     for (const category of STACK) {
       const ids = category.items.map((item) => item.id);

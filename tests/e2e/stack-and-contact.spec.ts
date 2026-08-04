@@ -191,3 +191,50 @@ test.describe('contact form', () => {
     expect(canScroll).toBe(true);
   });
 });
+
+test.describe('stack icons', () => {
+  test('tints every brand mark with the chip colour', async ({ page }) => {
+    await gotoReady(page, '/');
+    await page.getByRole('button', { name: /Frontend/ }).click();
+
+    const icon = page.locator('.stack-icon').first();
+    await expect(icon).toBeAttached();
+
+    const style = await icon.evaluate((node) => {
+      const computed = getComputedStyle(node);
+      return {
+        background: computed.backgroundColor,
+        mask: computed.maskImage || computed.webkitMaskImage,
+      };
+    });
+
+    // `currentColor` resolves to the chip's own text colour, so the mark brightens with it.
+    expect(style.background).not.toBe('rgba(0, 0, 0, 0)');
+    expect(style.mask).toContain('/icons/stack/');
+  });
+
+  test('serves every mark it references', async ({ page }) => {
+    await gotoReady(page, '/');
+
+    const missing: string[] = [];
+    page.on('response', (response) => {
+      if (response.url().includes('/icons/stack/') && !response.ok()) missing.push(response.url());
+    });
+
+    for (const name of [/Frontend/, /Backend/, /DevOps/, /Testing/]) {
+      await page.getByRole('button', { name }).click();
+    }
+    await page.waitForTimeout(500);
+
+    expect(missing).toEqual([]);
+  });
+
+  test('keeps the marks out of the accessibility tree', async ({ page }) => {
+    await gotoReady(page, '/');
+    await page.getByRole('button', { name: /Frontend/ }).click();
+
+    const chip = page.getByText('Next.js', { exact: false }).first();
+    await expect(chip).toContainText('Next.js');
+    await expect(page.locator('.stack-icon').first()).toHaveAttribute('aria-hidden', 'true');
+  });
+});
