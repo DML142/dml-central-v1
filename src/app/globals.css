@@ -262,6 +262,39 @@
   --breakpoint-2xl: 1920px;
 
   --container-page: 1680px;
+
+  /* Radix drives its exit state off animations, not transitions: it waits for `animationend`
+     before unmounting, so a transition would never get to run (tech.md 9.3). */
+  --animate-backdrop-in: backdrop-in var(--dur-base) var(--ease-out);
+  --animate-backdrop-out: backdrop-out var(--dur-base) var(--ease-out);
+  --animate-panel-in: panel-in var(--dur-base) var(--ease-out);
+  --animate-panel-out: panel-out var(--dur-base) var(--ease-out);
+
+  @keyframes backdrop-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes backdrop-out {
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes panel-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+
+  @keyframes panel-out {
+    to {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
 }
 
 /* Frame metrics step with the viewport rather than with a utility, because the frame inset and the
@@ -412,4 +445,47 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* A 12px rule instead of a bullet, aligned to the first line's optical centre. */
+@utility rule-bullet {
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0.65em;
+    left: 0;
+    width: 12px;
+    height: 1px;
+    background-color: var(--color-line-strong);
+  }
+}
+
+/* Vertically centred, 44px minimum hit area, above the stacked slides. */
+@utility gallery-arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: --spacing(11);
+  height: --spacing(11);
+  border: 1px solid var(--color-line);
+  background-color: color-mix(in srgb, var(--color-void) 70%, transparent);
+  color: var(--color-text);
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
+
+  &:hover {
+    border-color: var(--color-violet-bright);
+    background-color: var(--color-surface-raised);
+  }
+}
+
+@utility thumb-strip {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
 }
