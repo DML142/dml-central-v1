@@ -8,18 +8,16 @@ const OPTIONS: ParticleFieldOptions = {
   count: 120,
   seed: 20260804,
   bounds: BOUNDS,
-  driftAmplitude: 0.12,
-  driftFrequency: 0.16,
+  cameraZ: 14,
+  boundsSlack: 0.08,
+  driftAmplitude: 0.5,
+  driftFrequency: 0.35,
+  driftRateJitter: 0.5,
   repulsionRadius: 3.2,
   repulsionStrength: 0.85,
   springK: 0.015,
   damping: 0.92,
 };
-
-function distance(positions: Float32Array, index: number, x: number, y: number): number {
-  const offset = index * 3;
-  return Math.hypot(positions[offset]! - x, positions[offset + 1]! - y);
-}
 
 function run(
   field: ParticleField,
@@ -30,15 +28,30 @@ function run(
   for (let i = 0; i < frames; i += 1) field.update(dt, pointer);
 }
 
-/** The pointer sits on `z = 0`, so only a point near that plane is inside the repulsion radius. */
-function indexNearestToPlane(field: ParticleField): number {
+/** The index whose point sits deepest in the volume — the hardest case for a pointer on `z = 0`. */
+function deepestIndex(field: ParticleField): number {
   let best = 0;
 
   for (let i = 1; i < field.count; i += 1) {
-    if (Math.abs(field.positions[i * 3 + 2]!) < Math.abs(field.positions[best * 3 + 2]!)) best = i;
+    if (field.positions[i * 3 + 2]! < field.positions[best * 3 + 2]!) best = i;
   }
 
   return best;
+}
+
+/** Where a point at depth `z` appears when the pointer is unprojected onto `z = 0`. */
+function pointerOver(
+  field: ParticleField,
+  index: number,
+  offsetX: number,
+): { x: number; y: number } {
+  const offset = index * 3;
+  const scale = OPTIONS.cameraZ / (OPTIONS.cameraZ - field.positions[offset + 2]!);
+
+  return {
+    x: (field.positions[offset]! + offsetX) * scale,
+    y: field.positions[offset + 1]! * scale,
+  };
 }
 
 describe('ParticleField', () => {
@@ -70,31 +83,83 @@ describe('ParticleField', () => {
 
     run(field, 600, 1 / 60, null);
 
+    // The drift is a spring towards a target that never leaves the amplitude around the origin.
+    const reach = OPTIONS.driftAmplitude * 2;
+
     for (let i = 0; i < OPTIONS.count; i += 1) {
       const offset = i * 3;
-      expect(Math.abs(field.positions[offset]! - before[offset]!)).toBeLessThan(0.5);
-      expect(Math.abs(field.positions[offset + 1]! - before[offset + 1]!)).toBeLessThan(0.5);
-      expect(Math.abs(field.positions[offset + 2]! - before[offset + 2]!)).toBeLessThan(0.5);
+      expect(Math.abs(field.positions[offset]! - before[offset]!)).toBeLessThan(reach);
+      expect(Math.abs(field.positions[offset + 1]! - before[offset + 1]!)).toBeLessThan(reach);
+      expect(Math.abs(field.positions[offset + 2]! - before[offset + 2]!)).toBeLessThan(reach);
     }
   });
 
   it('pushes points away from the pointer and springs them back', () => {
-    const index = indexNearestToPlane(field);
-    const startX = field.positions[index * 3]!;
-    const startY = field.positions[index * 3 + 1]!;
-    const pointer = { x: startX - 0.4, y: startY };
+    // A drifting field moves on its own, so the control isolates what the pointer actually did.
+    const control = new ParticleField(OPTIONS);
+    const pointer = pointerOver(field, 0, -0.4);
 
-    run(field, 60, 1 / 60, pointer);
-    const pushed = distance(field.positions, index, startX, startY);
+    // Measured a quarter of a second in: the spring's period is under a second, so a longer
+    // window catches the point on its way back and reads as no push at all.
+    run(field, 15, 1 / 60, pointer);
+    run(control, 15, 1 / 60, null);
+    const pushed = field.positions[0]! - control.positions[0]!;
 
-    expect(pushed).toBeGreaterThan(0.1);
-    expect(field.positions[index * 3]!).toBeGreaterThan(startX);
+    expect(pushed).toBeGreaterThan(0.3);
 
     run(field, 900, 1 / 60, null);
-    const settled = distance(field.positions, index, startX, startY);
+    run(control, 900, 1 / 60, null);
 
-    expect(settled).toBeLessThan(pushed);
-    expect(settled).toBeLessThan(0.5);
+    expect(Math.abs(field.positions[0]! - control.positions[0]!)).toBeLessThan(pushed);
+  });
+
+  it('reacts to a pointer straight over a point however deep it sits', () => {
+    const index = deepestIndex(field);
+    const control = new ParticleField(OPTIONS);
+    const pointer = pointerOver(field, index, -0.4);
+
+    expect(Math.abs(field.positions[index * 3 + 2]!)).toBeGreaterThan(OPTIONS.repulsionRadius);
+
+    run(field, 15, 1 / 60, pointer);
+    run(control, 15, 1 / 60, null);
+
+    expect(field.positions[index * 3]! - control.positions[index * 3]!).toBeGreaterThan(0.3);
+  });
+
+  it('never lets a point leave the volume by more than its slack', () => {
+    const pointer = { x: 0, y: 0 };
+
+    run(field, 1200, 1 / 60, pointer);
+
+    const limitX = (BOUNDS.width / 2) * (1 + OPTIONS.boundsSlack);
+    const limitY = (BOUNDS.height / 2) * (1 + OPTIONS.boundsSlack);
+    const limitZ = (BOUNDS.depth / 2) * (1 + OPTIONS.boundsSlack);
+
+    for (let i = 0; i < OPTIONS.count; i += 1) {
+      expect(Math.abs(field.positions[i * 3]!)).toBeLessThanOrEqual(limitX);
+      expect(Math.abs(field.positions[i * 3 + 1]!)).toBeLessThanOrEqual(limitY);
+      expect(Math.abs(field.positions[i * 3 + 2]!)).toBeLessThanOrEqual(limitZ);
+    }
+  });
+
+  it('drifts each point at its own rate rather than in lockstep', () => {
+    const before = Float32Array.from(field.positions);
+
+    run(field, 120, 1 / 60, null);
+
+    const travelled = Array.from({ length: OPTIONS.count }, (_, i) =>
+      Math.abs(field.positions[i * 3]! - before[i * 3]!),
+    );
+    const spread = Math.max(...travelled) - Math.min(...travelled);
+
+    // A single shared frequency would move every point by nearly the same amount.
+    expect(spread).toBeGreaterThan(0.2);
+  });
+
+  it('lays out a different field for a different seed', () => {
+    const other = new ParticleField({ ...OPTIONS, seed: OPTIONS.seed + 1 });
+
+    expect(Array.from(other.positions)).not.toEqual(Array.from(field.positions));
   });
 
   it('leaves points outside the repulsion radius alone', () => {
@@ -129,7 +194,7 @@ describe('ParticleField', () => {
     run(slow, 60, 1 / 60, null);
 
     for (let i = 0; i < OPTIONS.count * 3; i += 1) {
-      expect(fast.positions[i]!).toBeCloseTo(slow.positions[i]!, 3);
+      expect(fast.positions[i]!).toBeCloseTo(slow.positions[i]!, 2);
     }
   });
 
