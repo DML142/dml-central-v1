@@ -43,6 +43,9 @@ export default defineConfig([
       ...jsxA11y.flatConfigs.recommended.rules,
 
       'import/no-unresolved': 'off',
+      // Grouping and blank lines only. Order inside a group belongs to
+      // prettier-plugin-organize-imports, which sorts by raw specifier and disagrees with
+      // this rule's alphabetiser on where punctuation ranks.
       'import/order': [
         'error',
         {
@@ -57,7 +60,6 @@ export default defineConfig([
           pathGroups: [{ pattern: '@/**', group: 'internal', position: 'before' }],
           pathGroupsExcludedImportTypes: ['builtin'],
           'newlines-between': 'always',
-          alphabetize: { order: 'asc', caseInsensitive: true },
         },
       ],
     },
