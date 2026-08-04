@@ -11,9 +11,17 @@ interface Props {
   isRunning: boolean;
   onReady: () => void;
   onContextLost: () => void;
+  onBudgetMissed: () => void;
 }
 
-export function HeroCanvas({ profileName, color, isRunning, onReady, onContextLost }: Props) {
+export function HeroCanvas({
+  profileName,
+  color,
+  isRunning,
+  onReady,
+  onContextLost,
+  onBudgetMissed,
+}: Props) {
   const profile = PARTICLE_PROFILES[profileName];
 
   return (
@@ -34,6 +42,7 @@ export function HeroCanvas({ profileName, color, isRunning, onReady, onContextLo
         color={color}
         onReady={onReady}
         onContextLost={onContextLost}
+        onBudgetMissed={onBudgetMissed}
       />
     </Canvas>
   );

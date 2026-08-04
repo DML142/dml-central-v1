@@ -27,18 +27,19 @@ export function HeroField({ children }: Props) {
   const device = useFieldDevice();
 
   const [isPainted, setIsPainted] = useState(false);
-  const [hasLostContext, setHasLostContext] = useState(false);
+  const [hasGivenUp, setHasGivenUp] = useState(false);
 
   const handleReady = useCallback(() => {
     setIsPainted(true);
   }, []);
 
-  const handleContextLost = useCallback(() => {
-    setHasLostContext(true);
+  /** A lost context and a missed frame budget end the same way: the static field takes over. */
+  const handleGiveUp = useCallback(() => {
+    setHasGivenUp(true);
     setIsPainted(false);
   }, []);
 
-  const canRender = isSupported && !prefersReducedMotion && !hasLostContext && device !== null;
+  const canRender = isSupported && !prefersReducedMotion && !hasGivenUp && device !== null;
 
   return (
     <div
@@ -55,7 +56,8 @@ export function HeroField({ children }: Props) {
           color={device.color}
           isRunning={isRunning}
           onReady={handleReady}
-          onContextLost={handleContextLost}
+          onContextLost={handleGiveUp}
+          onBudgetMissed={handleGiveUp}
         />
       )}
     </div>

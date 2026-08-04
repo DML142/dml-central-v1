@@ -47,6 +47,17 @@ export const FIELD_LOOK = {
   connectionDepthDivisor: 2.6,
 } as const;
 
+/**
+ * When the field cannot hold a frame budget it is not worth having: a device without a real GPU
+ * pays for the whole simulation and gets a slideshow. Sustained frames slower than this for this
+ * many in a row hand the hero back to the static SVG (tech.md 12).
+ */
+export const FRAME_BUDGET = {
+  slowFrameMs: 40,
+  slowFrameLimit: 90,
+  warmUpFrames: 30,
+} as const;
+
 export interface ParticleProfile {
   count: number;
   maxConnectionDistance: number;

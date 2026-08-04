@@ -8,6 +8,7 @@ import {
   FIELD,
   FIELD_LOOK,
   FIELD_SEED,
+  FRAME_BUDGET,
   resolveFieldBounds,
   type ParticleProfile,
 } from '@/config/particles';
@@ -22,9 +23,10 @@ interface Props {
   color: string;
   onReady: () => void;
   onContextLost: () => void;
+  onBudgetMissed: () => void;
 }
 
-export function ParticleNetwork({ profile, color, onReady, onContextLost }: Props) {
+export function ParticleNetwork({ profile, color, onReady, onContextLost, onBudgetMissed }: Props) {
   const gl = useThree((state) => state.gl);
   const size = useThree((state) => state.size);
   const viewport = useThree((state) => state.viewport);
@@ -71,6 +73,8 @@ export function ParticleNetwork({ profile, color, onReady, onContextLost }: Prop
   const pointer = useRef<Pointer>({ x: 0, y: 0 });
   const isPointerInside = useRef(false);
   const hasPainted = useRef(false);
+  const frames = useRef(0);
+  const slowFrames = useRef(0);
 
   const pointsUniforms = useMemo(
     () => ({
@@ -151,6 +155,14 @@ export function ParticleNetwork({ profile, color, onReady, onContextLost }: Prop
       hasPainted.current = true;
       onReady();
     }
+
+    // A device without a real GPU pays for the whole simulation and gets a slideshow. Give it a
+    // few frames to warm up, then hand the hero back to the static field (tech.md 12).
+    frames.current += 1;
+    if (frames.current <= FRAME_BUDGET.warmUpFrames) return;
+
+    slowFrames.current = delta * 1000 > FRAME_BUDGET.slowFrameMs ? slowFrames.current + 1 : 0;
+    if (slowFrames.current >= FRAME_BUDGET.slowFrameLimit) onBudgetMissed();
   });
 
   const key = `${profile.count}-${aspect}`;
