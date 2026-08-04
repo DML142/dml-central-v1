@@ -230,11 +230,20 @@
   --text-title: clamp(1.25rem, 1.064rem + 0.762vw, 1.75rem);
   --text-body: clamp(0.9375rem, 0.891rem + 0.19vw, 1.0625rem);
   --text-meta: clamp(0.6875rem, 0.664rem + 0.095vw, 0.75rem);
+  --text-brand: 1.75rem;
 
   --tracking-display: -0.02em;
   --tracking-micro: 0.14em;
   --tracking-chip: 0.08em;
   --leading-display: 0.86;
+  --leading-band: 1.8;
+
+  /* Measure is a design decision, so the line lengths are tokens rather than one-off values. */
+  --container-headline: 9ch;
+  --container-copy: 44ch;
+  --container-band-copy: 46ch;
+  --container-summary: 60ch;
+  --container-prose: 62ch;
 
   --radius-chip: 2px;
 
@@ -261,6 +270,8 @@
   --frame-inset: 8px;
   --gutter: --spacing(4);
   --rail-width: 200px;
+  /* Minus the two hairlines the frame draws above and below the rail. */
+  --rail-height: calc(100dvh - var(--frame-inset) * 2 - 2px);
 }
 
 @media (width >= theme(--breakpoint-sm)) {
@@ -281,6 +292,87 @@
   :root {
     --frame-inset: 24px;
     --gutter: --spacing(12);
+  }
+}
+
+/* Two type recipes rather than two components: they are pure typography, they appear on spans,
+   headings, buttons and definition terms alike, and spelling them out as five utilities each
+   would bury every className they touch. */
+@utility micro {
+  font-family: var(--font-mono);
+  font-size: var(--text-meta);
+  font-weight: 400;
+  line-height: 1.4;
+  letter-spacing: var(--tracking-micro);
+  text-transform: uppercase;
+}
+
+/* Mono at reading length rather than as a label: step text, highlights, notes, band copy. */
+@utility mono-copy {
+  font-family: var(--font-mono);
+  font-size: var(--text-meta);
+  line-height: 1.7;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+@utility display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: var(--leading-display);
+  letter-spacing: var(--tracking-display);
+  text-transform: uppercase;
+}
+
+/* Every section is one hairline column: the gutter and the rules have to agree with the frame. */
+@utility section-gutter {
+  padding-inline: var(--gutter);
+}
+
+/* Asymmetric track lists are layout grammar, not values a component should carry inline. They
+   live here beside the frame metrics they have to agree with. */
+@utility frame-columns {
+  grid-template-columns: var(--rail-width) minmax(0, 1fr);
+}
+
+@utility hero-columns {
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+}
+
+@utility about-columns {
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+}
+
+@utility band-columns {
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) auto;
+}
+
+/* Parked fully off-screen rather than hidden, so it animates in on focus and never traps a
+   pointer. First focusable element on the page (tech.md 11). */
+@utility skip-link {
+  position: absolute;
+  top: --spacing(2);
+  left: --spacing(2);
+  z-index: 100;
+  transform: translateY(-200%);
+  transition: transform var(--dur-fast) var(--ease-out);
+
+  &:focus-visible {
+    transform: translateY(0);
+  }
+}
+
+/* The only glow on the page (tech.md 4.1): a low-opacity violet radial behind the hero field. */
+@utility hero-glow {
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      60% 55% at 72% 42%,
+      color-mix(in srgb, var(--color-violet-deep) 55%, transparent) 0%,
+      transparent 70%
+    );
   }
 }
 
