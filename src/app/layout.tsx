@@ -18,6 +18,17 @@ interface Props {
 export default function RootLayout({ children }: Props) {
   return (
     <html lang="en">
+      <head>
+        {/* Only the Latin display cut is preloaded: it carries the headline in the default
+            locale, and the other nineteen subsets are picked by unicode-range on demand. */}
+        <link
+          rel="preload"
+          href="/fonts/oswald-latin-700-normal.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body>{children}</body>
     </html>
   );

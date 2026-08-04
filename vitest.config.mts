@@ -7,6 +7,10 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
+    // Node 25 ships its own `localStorage` global, which shadows jsdom's and is a stub unless
+    // `--localstorage-file` is given. Turning it off hands the tests jsdom's real `Storage`.
+    pool: 'forks',
+    execArgv: ['--no-experimental-webstorage'],
     setupFiles: ['./tests/setup.ts'],
     include: ['tests/unit/**/*.test.{ts,tsx}'],
     coverage: {
