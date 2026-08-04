@@ -2,17 +2,18 @@
 
 import { useSyncExternalStore } from 'react';
 
-import { resolveProfileName, type ProfileName } from '@/config/particles';
+import { randomFieldSeed, resolveProfileName, type ProfileName } from '@/config/particles';
 import { readColorToken } from '@/lib/theme-token';
 
 export interface FieldDevice {
   profileName: ProfileName;
   color: string;
+  seed: number;
 }
 
 let device: FieldDevice | undefined;
 
-/** Read once and cached: the budget does not follow a resize, and the palette never changes. */
+/** Read once and cached: the budget does not follow a resize, and one layout lasts one page load. */
 function read(): FieldDevice {
   device ??= {
     profileName: resolveProfileName({
@@ -20,6 +21,7 @@ function read(): FieldDevice {
       cores: navigator.hardwareConcurrency,
     }),
     color: readColorToken('--color-violet-bright'),
+    seed: randomFieldSeed(),
   };
 
   return device;

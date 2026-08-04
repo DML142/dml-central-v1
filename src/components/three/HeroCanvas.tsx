@@ -8,6 +8,7 @@ import { FIELD, PARTICLE_PROFILES, type ProfileName } from '@/config/particles';
 interface Props {
   profileName: ProfileName;
   color: string;
+  seed: number;
   isRunning: boolean;
   onReady: () => void;
   onContextLost: () => void;
@@ -17,6 +18,7 @@ interface Props {
 export function HeroCanvas({
   profileName,
   color,
+  seed,
   isRunning,
   onReady,
   onContextLost,
@@ -40,6 +42,7 @@ export function HeroCanvas({
       <ParticleNetwork
         profile={profile}
         color={color}
+        seed={seed}
         onReady={onReady}
         onContextLost={onContextLost}
         onBudgetMissed={onBudgetMissed}

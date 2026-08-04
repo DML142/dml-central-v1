@@ -7,8 +7,12 @@ export const FIELD = {
   fov: 45,
   /** The field overruns the frustum by this much, so the constellation bleeds past every edge. */
   bleed: 1.2,
-  /** Radians per second of the sine drift. Low enough that the field reads as still, not floating. */
-  driftFrequency: 0.16,
+  /** Base radians per second of the sine drift. */
+  driftFrequency: 0.35,
+  /** Per-point spread around that rate, so the field does not breathe in step (fraction of it). */
+  driftRateJitter: 0.6,
+  /** How far past the volume the pointer may push a point before it is held at the wall. */
+  boundsSlack: 0.08,
 } as const;
 
 /**
@@ -27,8 +31,14 @@ export function resolveFieldBounds(aspect: number): {
   return { width: height * aspect, height, depth: FIELD.depth };
 }
 
-/** Same seed as the static SVG field, so the two read as the same constellation. */
-export const FIELD_SEED = 20260804;
+/**
+ * A fresh layout on every page load. The static SVG stays seeded — it is server-rendered and has
+ * to match the markup — but the WebGL field has no such constraint, and a constellation that is
+ * pixel-identical on every visit reads as wallpaper.
+ */
+export function randomFieldSeed(): number {
+  return Math.floor(Math.random() * 0xffffffff);
+}
 
 /**
  * Depth-driven look, carried over from the static SVG so the WebGL field is the same drawing.
@@ -79,7 +89,7 @@ export const PARTICLE_PROFILES = {
     repulsionStrength: 0.85,
     springK: 0.015,
     damping: 0.92,
-    driftAmplitude: 0.12,
+    driftAmplitude: 0.5,
     dpr: [1, 1.75],
   },
   tablet: {
@@ -90,7 +100,7 @@ export const PARTICLE_PROFILES = {
     repulsionStrength: 0.85,
     springK: 0.015,
     damping: 0.92,
-    driftAmplitude: 0.12,
+    driftAmplitude: 0.5,
     dpr: [1, 1.5],
   },
   mobile: {
@@ -101,7 +111,7 @@ export const PARTICLE_PROFILES = {
     repulsionStrength: 0.7,
     springK: 0.02,
     damping: 0.9,
-    driftAmplitude: 0.08,
+    driftAmplitude: 0.4,
     dpr: [1, 1.5],
   },
 } satisfies Record<string, ParticleProfile>;

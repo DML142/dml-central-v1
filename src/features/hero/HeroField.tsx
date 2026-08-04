@@ -54,6 +54,7 @@ export function HeroField({ children }: Props) {
         <HeroCanvasHost
           profileName={device.profileName}
           color={device.color}
+          seed={device.seed}
           isRunning={isRunning}
           onReady={handleReady}
           onContextLost={handleGiveUp}

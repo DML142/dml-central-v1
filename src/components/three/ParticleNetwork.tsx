@@ -7,7 +7,6 @@ import { Color, type BufferAttribute, type BufferGeometry } from 'three';
 import {
   FIELD,
   FIELD_LOOK,
-  FIELD_SEED,
   FRAME_BUDGET,
   resolveFieldBounds,
   type ParticleProfile,
@@ -21,12 +20,20 @@ import { SpatialGrid } from '@/lib/three/spatial-grid';
 interface Props {
   profile: ParticleProfile;
   color: string;
+  seed: number;
   onReady: () => void;
   onContextLost: () => void;
   onBudgetMissed: () => void;
 }
 
-export function ParticleNetwork({ profile, color, onReady, onContextLost, onBudgetMissed }: Props) {
+export function ParticleNetwork({
+  profile,
+  color,
+  seed,
+  onReady,
+  onContextLost,
+  onBudgetMissed,
+}: Props) {
   const gl = useThree((state) => state.gl);
   const size = useThree((state) => state.size);
   const viewport = useThree((state) => state.viewport);
@@ -41,10 +48,13 @@ export function ParticleNetwork({ profile, color, onReady, onContextLost, onBudg
       bounds,
       field: new ParticleField({
         count: profile.count,
-        seed: FIELD_SEED,
+        seed,
         bounds,
+        cameraZ: FIELD.cameraZ,
+        boundsSlack: FIELD.boundsSlack,
         driftAmplitude: profile.driftAmplitude,
         driftFrequency: FIELD.driftFrequency,
+        driftRateJitter: FIELD.driftRateJitter,
         repulsionRadius: profile.repulsionRadius,
         repulsionStrength: profile.repulsionStrength,
         springK: profile.springK,
@@ -63,7 +73,7 @@ export function ParticleNetwork({ profile, color, onReady, onContextLost, onBudg
         halfDepth: bounds.depth / 2,
       }),
     };
-  }, [aspect, profile]);
+  }, [aspect, profile, seed]);
 
   const pointsAttribute = useRef<BufferAttribute>(null);
   const linePositions = useRef<BufferAttribute>(null);
