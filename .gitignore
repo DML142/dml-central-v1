@@ -16,3 +16,8 @@ CLAUDE.local.md
 *.log
 
 .claude/settings.local.json
+
+.claude/
+CLAUDE.md
+screenshots/
+tech.md
