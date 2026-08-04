@@ -8,7 +8,7 @@ describe('home page', () => {
     render(<Home />);
 
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
-      'DML — Full-stack engineer',
+      'Full-stack systems that stay up.',
     );
   });
 });
