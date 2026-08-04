@@ -47,7 +47,12 @@ export function buildConstellation(): Constellation {
       const b = points[j];
       if (!a || !b) continue;
 
-      const distance = Math.hypot(a.x - b.x, a.y - b.y);
+      // Not `Math.hypot`: its precision is implementation-defined, and this number reaches the
+      // server-rendered markup as a `stroke-opacity`. `Math.sqrt` is exactly rounded, so the
+      // server and every client engine agree on the attribute to the last digit.
+      const dx = a.x - b.x;
+      const dy = a.y - b.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
       if (distance > MAX_DISTANCE) continue;
 
       lines.push({
