@@ -546,3 +546,21 @@
   height: 1px;
   overflow: hidden;
 }
+
+/* Devicon marks are masks, not images: the file stays out of the JavaScript bundle and the mark
+   inherits `currentColor`, so a chip and its icon brighten together on hover (tech.md 10).
+   `-webkit-mask-*` is required down to Safari 15.6 (tech.md 12). */
+@utility stack-icon {
+  width: 1em;
+  height: 1em;
+  flex: none;
+  background-color: currentColor;
+  -webkit-mask-image: var(--stack-icon);
+  mask-image: var(--stack-icon);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
