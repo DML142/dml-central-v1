@@ -51,16 +51,19 @@ test.describe('locale switching', () => {
     );
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
 
-    await page.getByRole('button', { name: 'UA' }).click();
+    await page.getByRole('button', { name: 'UA', exact: true }).click();
 
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Системи, які не падають.');
     await expect(page.locator('html')).toHaveAttribute('lang', 'uk');
-    await expect(page.getByRole('button', { name: 'UA' })).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('button', { name: 'UA', exact: true })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
   });
 
   test('remembers the choice across a reload', async ({ page }) => {
     await page.goto('/');
-    await page.getByRole('button', { name: 'RU' }).click();
+    await page.getByRole('button', { name: 'RU', exact: true }).click();
 
     await page.reload();
 
@@ -79,8 +82,11 @@ test.describe('locale switching', () => {
 
     // Dispatched rather than clicked: Playwright scrolls a target into view first, which would
     // move the page itself and hide the behaviour under test.
-    await page.getByRole('button', { name: 'UA' }).dispatchEvent('click');
-    await expect(page.getByRole('button', { name: 'UA' })).toHaveAttribute('aria-pressed', 'true');
+    await page.getByRole('button', { name: 'UA', exact: true }).dispatchEvent('click');
+    await expect(page.getByRole('button', { name: 'UA', exact: true })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
 
     const after = await page.evaluate(() => ({
       y: window.scrollY,
@@ -121,7 +127,7 @@ test.describe('responsive', () => {
       test(`holds the type scale in ${locale} at ${width}px`, async ({ page }) => {
         await page.setViewportSize({ width, height: 900 });
         await page.goto('/');
-        await page.getByRole('button', { name: label }).click();
+        await page.getByRole('button', { name: label, exact: true }).click();
         await page.evaluate(() => document.fonts.ready);
 
         const overflow = await page.evaluate(

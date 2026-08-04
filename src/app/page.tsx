@@ -8,6 +8,7 @@ import { About } from '@/features/about/About';
 import { ContactBand } from '@/features/contact/ContactBand';
 import { Constellation } from '@/features/hero/Constellation';
 import { Hero } from '@/features/hero/Hero';
+import { ProjectsSection } from '@/features/projects/ProjectsSection';
 
 export default function Home() {
   return (
@@ -23,6 +24,7 @@ export default function Home() {
 
           <main id="main" className="min-w-0">
             <Hero field={<Constellation />} />
+            <ProjectsSection />
             <About />
             <ContactBand />
           </main>
