@@ -571,28 +571,16 @@
 
 /* A block that plays on load has to be out of sight before the first paint, or the reader watches
    the hero land and then get pulled back to be animated — the runtime arrives a chunk later and
-   cannot be early enough. CSS holds the block and hands it to the runtime, which cancels this
-   animation the moment it takes over.
+   cannot ever be early enough. So CSS holds the block, and the runtime clears `data-motion` when
+   it takes over.
 
-   The animation *is* the safety net. It does not fill, so when it ends the block simply appears:
-   a visitor whose JavaScript never arrives waits a beat and then reads the page. Nothing here is
-   gated on the runtime existing (tech.md 11), and a reader who asked for less motion never sees
-   the rule at all.
-
-   The duration is a ceiling on how long the hero can be untouchable — a clipped block takes no
-   clicks — so it is short, and `SEQUENCE.standby` in `src/config/motion.ts` carries the same
-   number for the runtime to check itself against. */
-@media (prefers-reduced-motion: no-preference) {
-  [data-reveal-immediate] {
-    animation: reveal-standby 0.7s step-end;
-  }
-}
-
-@keyframes reveal-standby {
-  0%,
-  100% {
-    clip-path: inset(0 0 100% 0);
-  }
+   The hold is keyed on an attribute rather than a duration on purpose. A timed hold is a race
+   against the network: set to 1.5s it lost to a 2.4s chunk on the dev server every time, and the
+   hero simply never played. Nothing here is gated on the runtime arriving either — the inline
+   script in the layout sets the attribute only when motion is wanted, and drops it on its own if
+   the runtime never reports in (tech.md 11). */
+[data-motion='pending'] [data-reveal-immediate] {
+  clip-path: inset(0 0 100% 0);
 }
 
 /* The reveal runtime cuts text into lines and clips each one behind its own mask. The display face

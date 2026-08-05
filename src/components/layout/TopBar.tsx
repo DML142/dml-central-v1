@@ -11,11 +11,15 @@ export function TopBar() {
 
   return (
     <header className="text-text-faint flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-2">
-      <Reveal key={locale} variant="type" immediate>
+      <Reveal key={`identity-${locale}`} variant="type" immediate>
         <Eyebrow>{t('meta.identity')}</Eyebrow>
       </Reveal>
+
       <LocaleSwitcher />
-      <Eyebrow className="ml-auto text-right">{t('meta.attribution')}</Eyebrow>
+
+      <Reveal key={`attribution-${locale}`} variant="type" immediate className="ml-auto">
+        <Eyebrow className="text-right">{t('meta.attribution')}</Eyebrow>
+      </Reveal>
     </header>
   );
 }

@@ -8,6 +8,7 @@ import { SideRail } from '@/components/layout/SideRail';
 import { SkipLink } from '@/components/layout/SkipLink';
 import { TopBar } from '@/components/layout/TopBar';
 import { Toaster } from '@/components/ui/sonner';
+import { MOTION_HOLD_MS } from '@/config/motion';
 import { SITE } from '@/content/site';
 import { ContactModal } from '@/features/contact/ContactModal';
 import { SITE_URL } from '@/lib/public-env';
@@ -52,6 +53,16 @@ export default function RootLayout({ children }: Props) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Runs before the first paint, which is the whole point: it marks the load sequence as
+            held so the hero is never painted and then pulled back to be animated. The reveal
+            runtime clears the mark when it takes over. The timeout is the failsafe for the one
+            case CSS cannot see — scripting on, but the runtime chunk never arriving. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var d=document.documentElement;if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;d.dataset.motion='pending';setTimeout(function(){if(d.dataset.motion==='pending')delete d.dataset.motion},${String(MOTION_HOLD_MS)})})()`,
+          }}
+        />
+
         {/* Only the Latin display cut is preloaded: it carries the headline in the default
             locale, and the other nineteen subsets are picked by unicode-range on demand. */}
         <link

@@ -182,6 +182,12 @@ test.describe('contact form', () => {
   });
 
   test('explains a submission that trips the fill-time floor', async ({ page }) => {
+    // The form stamps its clock when it mounts, and the rule is about the reader answering
+    // impossibly fast. Pinning the wall clock — timers and frames are untouched — keeps the
+    // elapsed fill time at zero however long the runner takes to type, so what is under test is
+    // the floor rather than the speed of the machine.
+    await page.clock.setFixedTime(Date.now());
+
     await fillValid(page);
     await page.getByRole('button', { name: 'Send message' }).click();
 

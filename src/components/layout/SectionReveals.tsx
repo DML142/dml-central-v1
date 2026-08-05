@@ -132,23 +132,12 @@ export function SectionReveals() {
       await document.fonts?.ready;
       if (cancelled) return;
 
-      // Past the standby window the load sequence has already shown itself, and yanking it back to
-      // replay would be the exact flash the standby exists to prevent. Late is a reason to leave
-      // the hero alone, not to animate it.
-      const late = performance.now() > SEQUENCE.standby * 1000;
-
       const context = gsap.context(() => {
         let step = 0;
 
         for (const plan of planReveals(document)) {
-          if (plan.immediate && late) continue;
-
           // The load sequence is ordered by the document, so the page assembles top down.
           const delay = plan.immediate ? step++ * SEQUENCE.step : 0;
-
-          // Take the block off the CSS standby that has been holding it since before first paint.
-          // Its own initial state is set below, in this same frame, so nothing flashes between.
-          if (plan.immediate) gsap.set(plan.trigger, { animation: 'none' });
 
           const trigger = {
             scrollTrigger: { trigger: plan.trigger, start: REVEAL.start, once: true },
@@ -161,6 +150,10 @@ export function SectionReveals() {
           }
         }
       });
+
+      // Every initial state is set by now, so releasing the hold uncovers blocks that are already
+      // hidden by their own reveal. One frame, nothing in between.
+      delete document.documentElement.dataset.motion;
 
       // A trigger measures the page once. Late fonts, a locale switch and an opening accordion
       // panel all move the sections under it, and a stale start line reveals a block nobody has
