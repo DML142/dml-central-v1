@@ -2,8 +2,9 @@
 
 import { CtaButton } from '@/components/common/CtaButton';
 import { Eyebrow } from '@/components/common/Eyebrow';
+import { Reveal } from '@/components/common/Reveal';
 import { Steps } from '@/features/hero/Steps';
-import { useTranslate } from '@/hooks/use-translate';
+import { useLocale, useTranslate } from '@/hooks/use-translate';
 import { useUiStore } from '@/stores/ui-store';
 
 interface Props {
@@ -13,34 +14,51 @@ interface Props {
 
 export function Hero({ field }: Props) {
   const t = useTranslate();
+  const locale = useLocale();
   const openContact = useUiStore((state) => state.openContact);
 
+  // A split reveal rewrites its element into pieces. Keying on the locale makes React throw that
+  // markup away and mount the new copy clean, instead of patching text into a DOM it no longer
+  // owns — which would leave the reveal to put the previous language back.
   return (
     <section aria-labelledby="hero-title" className="border-line relative isolate border-b">
       {field}
 
-      <div className="border-line section-gutter flex items-baseline justify-between gap-4 border-b py-4">
+      <Reveal
+        key={`eyebrow-${locale}`}
+        variant="type"
+        immediate
+        className="border-line section-gutter flex items-baseline justify-between gap-4 border-b py-4"
+      >
         <Eyebrow tone="muted">{t('hero.eyebrow')}</Eyebrow>
         <Eyebrow>{t('hero.est')}</Eyebrow>
-      </div>
+      </Reveal>
 
       <div className="section-gutter lg:hero-columns grid grid-cols-1 gap-12 pt-12 pb-16 lg:gap-16 lg:py-24">
-        <div>
+        <Reveal key={`headline-${locale}`} variant="lines" immediate>
           <h1 id="hero-title" className="display text-display-xl max-w-headline">
             {t('hero.headline')}
           </h1>
           <p className="text-text-muted max-w-copy mt-6">{t('hero.copy')}</p>
-        </div>
+        </Reveal>
 
         <div className="flex flex-col items-start justify-end gap-3 lg:items-end lg:text-right">
-          <CtaButton
-            onClick={() => {
-              openContact('hero');
-            }}
-          >
-            {t('hero.cta')}
-          </CtaButton>
-          <Eyebrow>{t('hero.stats')}</Eyebrow>
+          {/* The button is not a line of copy: splitting it would put its label and its arrow
+              inside one line element and lose the gap between them. It arrives behind the same
+              mask instead, which needs no rewriting of the DOM. */}
+          <Reveal variant="wipe" immediate>
+            <CtaButton
+              onClick={() => {
+                openContact('hero');
+              }}
+            >
+              {t('hero.cta')}
+            </CtaButton>
+          </Reveal>
+
+          <Reveal key={`stats-${locale}`} variant="type" immediate>
+            <Eyebrow>{t('hero.stats')}</Eyebrow>
+          </Reveal>
         </div>
       </div>
 

@@ -71,7 +71,15 @@ test.describe('smooth scroll', () => {
 
     // Playwright scrolls the trigger into view before clicking, so the page is already partway
     // down; the assertion is that the wheel moves nothing further, not that the offset is zero.
-    await page.getByRole('button', { name: 'Open gallery' }).first().click();
+    // The card is still being revealed until its block reports in, and a click aimed at a control
+    // mid-flight is how a click ends up landing on nothing.
+    const trigger = page.getByRole('button', { name: 'Open gallery' }).first();
+    await trigger.scrollIntoViewIfNeeded();
+    await expect(page.locator('[data-reveal]').filter({ has: trigger })).toHaveAttribute(
+      'data-reveal-done',
+      '',
+    );
+    await trigger.click();
     await expect(page.getByRole('dialog')).toBeVisible();
     const locked = await page.evaluate(() => window.scrollY);
 

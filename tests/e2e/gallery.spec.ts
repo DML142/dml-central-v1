@@ -2,10 +2,31 @@ import { expect, test, type Page } from '@playwright/test';
 
 import { gotoReady } from './support';
 
+/**
+ * The gallery button, once the card carrying it has stopped moving. The card is still being
+ * revealed until its block reports in, and clicking a control mid-flight is how a click ends up
+ * landing on nothing — which is what the intermittent "the dialog never came" failures were.
+ */
+const galleryTrigger = async (page: Page, index = 0) => {
+  const trigger = page.getByRole('button', { name: 'Open gallery' }).nth(index);
+  await trigger.scrollIntoViewIfNeeded();
+  await expect(page.locator('[data-reveal]').filter({ has: trigger })).toHaveAttribute(
+    'data-reveal-done',
+    '',
+  );
+
+  return trigger;
+};
+
 const openGallery = async (page: Page, index = 0) => {
   await gotoReady(page, '/');
-  await page.getByRole('button', { name: 'Open gallery' }).nth(index).click();
-  await expect(page.getByRole('dialog')).toBeVisible();
+  await (await galleryTrigger(page, index)).click();
+
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  // Visible is not settled: the panel enters on `translateY: 8px → 0` over `--dur-base`
+  // (tech.md 9.3), so every box measured before that finishes is a box mid-flight.
+  await dialog.evaluate((node) => Promise.all(node.getAnimations().map((a) => a.finished)));
 };
 
 test.describe('gallery modal', () => {
@@ -103,17 +124,14 @@ test.describe('gallery modal', () => {
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog')).toBeHidden();
 
-    await page.getByRole('button', { name: 'Open gallery' }).first().click();
+    await (await galleryTrigger(page)).click();
     await page.getByRole('button', { name: 'Close gallery' }).click();
     await expect(page.getByRole('dialog')).toBeHidden();
   });
 
   test('restores focus to the trigger and leaves no scroll lock behind', async ({ page }) => {
     await gotoReady(page, '/');
-    await page.evaluate(() => {
-      window.scrollTo(0, 300);
-    });
-    const trigger = page.getByRole('button', { name: 'Open gallery' }).first();
+    const trigger = await galleryTrigger(page);
     await trigger.click();
     await expect(page.getByRole('dialog')).toBeVisible();
 
@@ -148,7 +166,7 @@ test.describe('gallery modal', () => {
     await expect(page.getByRole('dialog')).toContainText('13 / 13');
     await page.keyboard.press('Escape');
 
-    await page.getByRole('button', { name: 'Open gallery' }).nth(1).click();
+    await (await galleryTrigger(page, 1)).click();
 
     await expect(page.getByRole('dialog')).toContainText('01 / 05');
     await expect(page.getByRole('dialog')).toContainText('DMLs Solutions — gallery');

@@ -66,9 +66,10 @@ prototype/         Throwaway static HTML that locked the layout; deleted after p
 public/            Self-hosted fonts, project screenshots, OG assets
 src/app/           Routes, root layout, global tokens
 src/components/    ui (shadcn), layout (frame chrome), common (primitives), three (canvas host)
-src/features/      hero, projects, stack, contact — each owns its components and tests
+src/features/      hero, projects, stack, about, contact — each owns its components and tests
 src/hooks/         Shared behaviour
-src/lib/           Pure logic: three (field simulation), telegram, validation, env, utils
+src/lib/           Pure logic: three (field simulation), motion (reveal planning), telegram,
+                   validation, env, utils
 src/stores/        Zustand stores
 src/content/       Typed content and the three locale dictionaries
 src/config/        Motion, breakpoints, particle parameters

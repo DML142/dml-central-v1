@@ -17,9 +17,9 @@ export function SideRail() {
       </a>
 
       <p className="micro text-text-faint hidden lg:mt-4 lg:block">
-        {RAIL_META_KEYS.map((key) => (
-          <span key={key} className="block">
-            {t(key)}
+        {RAIL_META_KEYS.map((metaKey) => (
+          <span key={metaKey} className="block">
+            {t(metaKey)}
           </span>
         ))}
       </p>

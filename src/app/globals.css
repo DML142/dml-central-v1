@@ -304,6 +304,15 @@
   --frame-inset: 8px;
   --gutter: --spacing(4);
   --rail-width: 200px;
+  /* The CTA's dashed rule. `step` is one tick of travel — five a second, which is the rate that
+     reads as a machine drawing the line rather than a sweep gliding across it. Four ticks carry the
+     pattern exactly one period, so the march loops seamlessly. */
+  --cta-dash: 6px;
+  --cta-dash-period: 12px;
+  --cta-dash-step: 200ms;
+  --cta-dash-ticks: 4;
+  --cta-dash-in: 500ms;
+  --cta-pad-x: --spacing(6);
   /* Minus the two hairlines the frame draws above and below the rail. */
   --rail-height: calc(100dvh - var(--frame-inset) * 2 - 2px);
 }
@@ -566,6 +575,80 @@
 
   [data-state='open'] & {
     transform: rotate(225deg) translate(-2px, -2px);
+  }
+}
+
+/* A block that plays on load has to be out of sight before the first paint, or the reader watches
+   the hero land and then get pulled back to be animated — the runtime arrives a chunk later and
+   cannot ever be early enough. So CSS holds the block, and the runtime clears `data-motion` when
+   it takes over.
+
+   The hold is keyed on an attribute rather than a duration on purpose. A timed hold is a race
+   against the network: set to 1.5s it lost to a 2.4s chunk on the dev server every time, and the
+   hero simply never played. Nothing here is gated on the runtime arriving either — the inline
+   script in the layout sets the attribute only when motion is wanted, and drops it on its own if
+   the runtime never reports in (tech.md 11). */
+[data-motion='pending'] [data-reveal-immediate] {
+  clip-path: inset(0 0 100% 0);
+}
+
+/* The reveal runtime cuts text into lines and clips each one behind its own mask. The display face
+   is set at a leading tighter than its own glyphs, so a mask flush with the line box shears the
+   tops and tails off the headline.
+
+   `overflow-clip-margin` is the only way to give the clip box that headroom without touching the
+   layout: padding plus a negative margin reads as neutral and is not — the margins collapse, and
+   splitting the page grew it by 407px, which moved every section under the hero while the hero
+   was still animating. Below Safari 16.4 the property is ignored and the mask clips flush, which
+   costs a sheared glyph for the length of the reveal and nothing at all once it reverts.
+   Written by SplitText, never by a component. */
+.reveal-line-mask {
+  overflow-clip-margin: 0.2em;
+}
+
+/* The rule under the label is the button's whole affordance: absent at rest, drawn in from the left
+   on hover or focus, then marching right at the same coarse rate. Five steps a second is deliberate
+   — a smooth sweep reads as decoration, a stepped one reads as something being drawn.
+
+   Taken out of flow on purpose: in flow it made the button nine pixels taller, and the contact
+   panel on a phone has none to spare — its foot has to stay inside the visible viewport (tech.md
+   12). Sitting in the bottom padding, it costs the layout nothing on any device or font state.
+   `currentColor` so it serves all three variants. */
+@utility cta-rule {
+  position: absolute;
+  right: var(--cta-pad-x);
+  bottom: --spacing(2);
+  left: var(--cta-pad-x);
+  height: 1px;
+  background-image: repeating-linear-gradient(
+    to right,
+    currentColor 0 var(--cta-dash),
+    transparent var(--cta-dash) var(--cta-dash-period)
+  );
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path var(--cta-dash-in) steps(5);
+
+  /* Focus gets it too: a keyboard reader is owed the same affordance as a pointer.
+
+     The march covers one full period per cycle, in four visible ticks. Stepping the whole period in
+     one go animates nothing at all: the pattern repeats every period, so a jump of exactly one
+     lands on a picture identical to the one it left. Moving by a fraction is what makes the travel
+     visible, and new dashes then arrive at the left edge on their own. */
+  button:hover > &,
+  button:focus-visible > & {
+    clip-path: inset(0 0 0 0);
+    animation: cta-dash-march calc(var(--cta-dash-step) * var(--cta-dash-ticks)) steps(4) infinite;
+  }
+
+  button:disabled > & {
+    animation: none;
+    clip-path: inset(0 100% 0 0);
+  }
+}
+
+@keyframes cta-dash-march {
+  to {
+    background-position-x: var(--cta-dash-period);
   }
 }
 

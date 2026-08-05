@@ -182,6 +182,12 @@ test.describe('contact form', () => {
   });
 
   test('explains a submission that trips the fill-time floor', async ({ page }) => {
+    // The form stamps its clock when it mounts, and the rule is about the reader answering
+    // impossibly fast. Pinning the wall clock — timers and frames are untouched — keeps the
+    // elapsed fill time at zero however long the runner takes to type, so what is under test is
+    // the floor rather than the speed of the machine.
+    await page.clock.setFixedTime(Date.now());
+
     await fillValid(page);
     await page.getByRole('button', { name: 'Send message' }).click();
 
@@ -227,9 +233,20 @@ test.describe('contact form', () => {
 });
 
 test.describe('stack icons', () => {
+  /**
+   * Leaves the panel open whichever state it starts in. Clicking it blind is a coin toss: panel 01
+   * is open by default on desktop and closed on a phone, so the same click reveals the chips in one
+   * place and unmounts them in the other.
+   */
+  const expandPanel = async (page: Page, name: RegExp) => {
+    const trigger = page.getByRole('button', { name });
+    if ((await trigger.getAttribute('aria-expanded')) !== 'true') await trigger.click();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+  };
+
   test('tints every brand mark with the chip colour', async ({ page }) => {
     await gotoReady(page, '/');
-    await page.getByRole('button', { name: /Frontend/ }).click();
+    await expandPanel(page, /Frontend/);
 
     const icon = page.locator('.stack-icon').first();
     await expect(icon).toBeAttached();
@@ -265,7 +282,7 @@ test.describe('stack icons', () => {
 
   test('keeps the marks out of the accessibility tree', async ({ page }) => {
     await gotoReady(page, '/');
-    await page.getByRole('button', { name: /Frontend/ }).click();
+    await expandPanel(page, /Frontend/);
 
     const chip = page.getByText('Next.js', { exact: false }).first();
     await expect(chip).toContainText('Next.js');
@@ -288,6 +305,10 @@ test.describe('contact form on a phone', () => {
 
     const panel = page.locator('[data-slot="dialog-content"]');
     await expect(panel).toBeVisible();
+
+    // The panel enters on `translateY: 8px → 0` (tech.md 9.3), so its box is still moving when it
+    // first becomes visible. Measuring geometry mid-transition measures the transition.
+    await panel.evaluate((node) => Promise.all(node.getAnimations().map((a) => a.finished)));
 
     // `100%` of a fixed element is the large viewport, which puts the foot of the panel under the
     // browser toolbar. The panel must end inside the height the reader can actually see.

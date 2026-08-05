@@ -10,15 +10,14 @@ export function ContactBand() {
   const t = useTranslate();
   const openContact = useUiStore((state) => state.openContact);
 
+  // The band arrives as one object: the violet ground, the figure, the copy and the button are all
+  // behind the same mask, and the mask slides off to the right. Wiping the children instead shows
+  // an empty violet plank first and fills it in afterwards.
   return (
-    <section
-      aria-labelledby="contact-title"
-      className="border-line bg-violet text-void section-gutter border-t py-12"
-    >
+    <section aria-labelledby="contact-title">
       <Reveal
         variant="wipe"
-        stagger
-        className="lg:band-columns grid grid-cols-1 gap-6 lg:items-center lg:gap-16"
+        className="border-line bg-violet text-void section-gutter lg:band-columns grid grid-cols-1 gap-6 border-t py-12 lg:items-center lg:gap-16"
       >
         <h2 id="contact-title" className="display text-display-lg">
           {t('band.figure')}
