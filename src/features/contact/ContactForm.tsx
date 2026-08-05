@@ -69,7 +69,9 @@ export function ContactForm({ onSent }: Props) {
   function handleServerResponse(response: ContactResponse) {
     if (response.ok) {
       setFailure('none');
-      toast.success(t('form.successTitle'));
+      // Distinct from `form.successTitle`, which the confirmation panel already shows on screen —
+      // the same text in both would announce twice and make the two elements ambiguous to find.
+      toast.success(t('form.successEyebrow'));
       onSent();
       return;
     }
