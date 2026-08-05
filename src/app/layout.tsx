@@ -44,9 +44,12 @@ interface Props {
   children: React.ReactNode;
 }
 
+// `suppressHydrationWarning` covers this element only, not the tree: browser extensions write
+// their own attributes onto `<html>` before React hydrates, and no version of the markup can match
+// them. A mismatch anywhere inside the page is still reported.
 export default function RootLayout({ children }: Props) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         {/* Only the Latin display cut is preloaded: it carries the headline in the default
             locale, and the other nineteen subsets are picked by unicode-range on demand. */}

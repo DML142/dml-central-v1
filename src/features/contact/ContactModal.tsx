@@ -22,9 +22,13 @@ export function ContactModal() {
         if (!next) closeContact();
       }}
     >
+      {/* A full-height sheet on a phone and a centred card from `md` up. Centring it on a small
+          screen puts its foot under the browser toolbar, where the submit button cannot be
+          reached — the containing block of a fixed element is the large viewport, not the visible
+          one. */}
       <DialogContent
         aria-describedby={undefined}
-        className="max-w-form inset-auto top-1/2 left-1/2 h-auto max-h-full w-full -translate-1/2 overflow-y-auto"
+        className="md:max-w-form md:inset-auto md:top-1/2 md:left-1/2 md:h-auto md:w-full md:-translate-1/2"
       >
         <div className="border-line section-gutter flex items-center justify-between gap-4 border-b py-4">
           <DialogTitle>{t('form.title')}</DialogTitle>
@@ -36,27 +40,30 @@ export function ContactModal() {
           </DialogClose>
         </div>
 
-        {isSent ? (
-          <div className="section-gutter flex flex-col items-start gap-4 py-16">
-            <Eyebrow tone="accent">{t('form.successEyebrow')}</Eyebrow>
-            <p className="display text-display-lg">{t('form.successTitle')}</p>
-            <p className="text-text-muted max-w-copy">{t('form.successCopy')}</p>
-            <CtaButton
-              variant="ghost"
-              onClick={() => {
-                setIsSent(false);
+        {/* Only the body scrolls, so the title and the close button never scroll out of reach. */}
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          {isSent ? (
+            <div className="section-gutter flex flex-col items-start gap-4 py-16">
+              <Eyebrow tone="accent">{t('form.successEyebrow')}</Eyebrow>
+              <p className="display text-display-lg">{t('form.successTitle')}</p>
+              <p className="text-text-muted max-w-copy">{t('form.successCopy')}</p>
+              <CtaButton
+                variant="ghost"
+                onClick={() => {
+                  setIsSent(false);
+                }}
+              >
+                {t('form.sendAnother')}
+              </CtaButton>
+            </div>
+          ) : (
+            <ContactForm
+              onSent={() => {
+                setIsSent(true);
               }}
-            >
-              {t('form.sendAnother')}
-            </CtaButton>
-          </div>
-        ) : (
-          <ContactForm
-            onSent={() => {
-              setIsSent(true);
-            }}
-          />
-        )}
+            />
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
