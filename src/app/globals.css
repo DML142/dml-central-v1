@@ -304,12 +304,14 @@
   --frame-inset: 8px;
   --gutter: --spacing(4);
   --rail-width: 200px;
-  /* The CTA's dashed rule. `step` is one dash width of travel per tick — five ticks a second, which
-     is the rate that reads as a machine drawing the line rather than a sweep gliding across it. */
+  /* The CTA's dashed rule. `step` is one tick of travel — five a second, which is the rate that
+     reads as a machine drawing the line rather than a sweep gliding across it. Four ticks carry the
+     pattern exactly one period, so the march loops seamlessly. */
   --cta-dash: 6px;
   --cta-dash-period: 12px;
   --cta-dash-step: 200ms;
-  --cta-dash-in: 1s;
+  --cta-dash-ticks: 4;
+  --cta-dash-in: 500ms;
   --cta-pad-x: --spacing(6);
   /* Minus the two hairlines the frame draws above and below the rail. */
   --rail-height: calc(100dvh - var(--frame-inset) * 2 - 2px);
@@ -626,11 +628,16 @@
   clip-path: inset(0 100% 0 0);
   transition: clip-path var(--cta-dash-in) steps(5);
 
-  /* Focus gets it too: a keyboard reader is owed the same affordance as a pointer. */
+  /* Focus gets it too: a keyboard reader is owed the same affordance as a pointer.
+
+     The march covers one full period per cycle, in four visible ticks. Stepping the whole period in
+     one go animates nothing at all: the pattern repeats every period, so a jump of exactly one
+     lands on a picture identical to the one it left. Moving by a fraction is what makes the travel
+     visible, and new dashes then arrive at the left edge on their own. */
   button:hover > &,
   button:focus-visible > & {
     clip-path: inset(0 0 0 0);
-    animation: cta-dash-march var(--cta-dash-step) steps(1) infinite;
+    animation: cta-dash-march calc(var(--cta-dash-step) * var(--cta-dash-ticks)) steps(4) infinite;
   }
 
   button:disabled > & {

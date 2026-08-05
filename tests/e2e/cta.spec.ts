@@ -25,10 +25,32 @@ test.describe('cta', () => {
     await cta.hover();
 
     await expect.poll(() => coveredPercent(rule), { timeout: 5000 }).toBe(0);
-    // It keeps stepping to the right while the pointer stays on it.
-    expect(await rule.evaluate((element) => getComputedStyle(element).animationName)).toBe(
-      'cta-dash-march',
-    );
+  });
+
+  test('keeps the dashes travelling while the pointer stays on it', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'there is no hover on a touch context');
+    await gotoReady(page, '/');
+
+    const cta = page.getByRole('button', { name: /contact me now/i }).first();
+    await cta.hover();
+
+    // Naming the animation proves nothing: the first cut stepped the pattern by exactly one period,
+    // which lands on a picture identical to the one it left, so the rule held perfectly still while
+    // reporting a running animation. Only distinct positions show it actually travels.
+    const positions = await cta.locator('.cta-rule').evaluate(async (element) => {
+      const seen: string[] = [];
+      const started = performance.now();
+
+      while (performance.now() - started < 900) {
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+        const x = getComputedStyle(element).backgroundPositionX;
+        if (seen.at(-1) !== x) seen.push(x);
+      }
+
+      return seen;
+    });
+
+    expect(new Set(positions).size).toBeGreaterThan(2);
   });
 
   test('gives a keyboard reader the same affordance', async ({ page, isMobile }) => {
