@@ -3,13 +3,19 @@
 import { IndexLabel } from '@/components/common/IndexLabel';
 import { Reveal } from '@/components/common/Reveal';
 import { STEPS } from '@/content/site';
-import { useTranslate } from '@/hooks/use-translate';
+import { useLocale, useTranslate } from '@/hooks/use-translate';
 
 export function Steps() {
   const t = useTranslate();
+  const locale = useLocale();
 
   return (
-    <Reveal variant="wipe" stagger className="border-line grid grid-cols-1 border-t md:grid-cols-3">
+    <Reveal
+      key={locale}
+      variant="lines"
+      immediate
+      className="border-line grid grid-cols-1 border-t md:grid-cols-3"
+    >
       {STEPS.map((step) => (
         <div
           key={step.index}

@@ -1,11 +1,13 @@
 'use client';
 
 import { Eyebrow } from '@/components/common/Eyebrow';
+import { Reveal } from '@/components/common/Reveal';
 import { RAIL_LINKS, RAIL_META_KEYS, SITE } from '@/content/site';
-import { useTranslate } from '@/hooks/use-translate';
+import { useLocale, useTranslate } from '@/hooks/use-translate';
 
 export function SideRail() {
   const t = useTranslate();
+  const locale = useLocale();
 
   return (
     <div className="border-line section-gutter flex flex-wrap items-center justify-between gap-4 border-b py-4 lg:sticky lg:top-(--frame-inset) lg:h-(--rail-height) lg:flex-col lg:items-stretch lg:justify-start lg:self-start lg:border-r lg:border-b-0 lg:py-6">
@@ -16,13 +18,15 @@ export function SideRail() {
         {SITE.brand}
       </a>
 
-      <p className="micro text-text-faint hidden lg:mt-4 lg:block">
-        {RAIL_META_KEYS.map((key) => (
-          <span key={key} className="block">
-            {t(key)}
-          </span>
-        ))}
-      </p>
+      <Reveal key={locale} variant="type" immediate className="hidden lg:mt-4 lg:block">
+        <p className="micro text-text-faint">
+          {RAIL_META_KEYS.map((metaKey) => (
+            <span key={metaKey} className="block">
+              {t(metaKey)}
+            </span>
+          ))}
+        </p>
+      </Reveal>
 
       <nav
         aria-label={t('nav.elsewhere')}

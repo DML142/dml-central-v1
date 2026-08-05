@@ -31,15 +31,62 @@ test.describe('section reveals', () => {
   test('uncovers the accent band left to right without fading it', async ({ page }) => {
     await gotoReady(page, '/');
 
-    const figure = revealIn(page, 'contact').locator('> *').first();
-    await expect.poll(() => coveredPercent(figure), { timeout: 10_000 }).toBeGreaterThan(50);
+    // The band arrives as one object, ground and all, so the reveal is the band itself.
+    const band = revealIn(page, 'contact');
+    await expect.poll(() => coveredPercent(band), { timeout: 10_000 }).toBeGreaterThan(50);
     // The whole point of the wipe: it is a mask moving, never a fade.
-    expect(await opacity(figure)).toBe('1');
+    expect(await opacity(band)).toBe('1');
 
-    await figure.scrollIntoViewIfNeeded();
+    await band.scrollIntoViewIfNeeded();
 
-    await expect.poll(() => coveredPercent(figure), { timeout: 10_000 }).toBe(0);
-    expect(await opacity(figure)).toBe('1');
+    await expect.poll(() => coveredPercent(band), { timeout: 10_000 }).toBe(0);
+    expect(await opacity(band)).toBe('1');
+  });
+
+  test('leaves no clip behind once the band has arrived', async ({ page }) => {
+    await gotoReady(page, '/');
+
+    const band = revealIn(page, 'contact');
+    await band.scrollIntoViewIfNeeded();
+
+    // A clip flush with the border box shears the tops and tails off the display face, so the
+    // mask has to be gone at rest rather than merely opened.
+    await expect
+      .poll(() => band.evaluate((element) => getComputedStyle(element).clipPath), {
+        timeout: 10_000,
+      })
+      .toBe('none');
+  });
+
+  test('plays the hero on load, with nothing to scroll to', async ({ page }) => {
+    await gotoReady(page, '/');
+
+    // No scrolling anywhere in this test: the hero is above the fold and runs on no trigger.
+    await expect
+      .poll(() => opacity(page.locator('[data-reveal-immediate]').first()), { timeout: 10_000 })
+      .toBe('1');
+
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await expect
+      .poll(
+        () =>
+          page
+            .locator('#hero-title')
+            .evaluate((element) => getComputedStyle(element).clipPath !== 'none'),
+        { timeout: 10_000 },
+      )
+      .toBe(false);
+  });
+
+  test('hands the text back once it has been set', async ({ page }) => {
+    await gotoReady(page, '/');
+
+    // The split rewrites the headline into lines and masks. Leaving that markup behind would
+    // hand every downstream reader — a resize, a locale switch, a screen reader — a DOM that no
+    // component wrote.
+    await expect
+      .poll(() => page.locator('#hero-title').innerHTML(), { timeout: 10_000 })
+      .toBe('Full-stack systems that stay up.');
   });
 
   test('staggers the children, not the container', async ({ page }) => {

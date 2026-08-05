@@ -569,6 +569,46 @@
   }
 }
 
+/* A block that plays on load has to be out of sight before the first paint, or the reader watches
+   the hero land and then get pulled back to be animated — the runtime arrives a chunk later and
+   cannot be early enough. CSS holds the block and hands it to the runtime, which cancels this
+   animation the moment it takes over.
+
+   The animation *is* the safety net. It does not fill, so when it ends the block simply appears:
+   a visitor whose JavaScript never arrives waits a beat and then reads the page. Nothing here is
+   gated on the runtime existing (tech.md 11), and a reader who asked for less motion never sees
+   the rule at all.
+
+   The duration is a ceiling on how long the hero can be untouchable — a clipped block takes no
+   clicks — so it is short, and `SEQUENCE.standby` in `src/config/motion.ts` carries the same
+   number for the runtime to check itself against. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-reveal-immediate] {
+    animation: reveal-standby 0.7s step-end;
+  }
+}
+
+@keyframes reveal-standby {
+  0%,
+  100% {
+    clip-path: inset(0 0 100% 0);
+  }
+}
+
+/* The reveal runtime cuts text into lines and clips each one behind its own mask. The display face
+   is set at a leading tighter than its own glyphs, so a mask flush with the line box shears the
+   tops and tails off the headline.
+
+   `overflow-clip-margin` is the only way to give the clip box that headroom without touching the
+   layout: padding plus a negative margin reads as neutral and is not — the margins collapse, and
+   splitting the page grew it by 407px, which moved every section under the hero while the hero
+   was still animating. Below Safari 16.4 the property is ignored and the mask clips flush, which
+   costs a sheared glyph for the length of the reveal and nothing at all once it reverts.
+   Written by SplitText, never by a component. */
+.reveal-line-mask {
+  overflow-clip-margin: 0.2em;
+}
+
 /* Off-screen, not `display: none`: a bot that reads the DOM should still find it and fill it in. */
 @utility honeypot {
   position: absolute;
