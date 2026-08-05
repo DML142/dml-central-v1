@@ -1,0 +1,92 @@
+import { expect, test, type Locator, type Page } from '@playwright/test';
+
+import { gotoReady } from './support';
+
+const revealIn = (page: Page, section: string): Locator =>
+  page.locator(`[aria-labelledby="${section}-title"] > [data-reveal]`);
+
+const opacity = (target: Locator) =>
+  target.evaluate((element) => getComputedStyle(element).opacity);
+
+/** The uncovered share of a wipe, read off `inset(top right bottom left)`: 100 hidden, 0 done. */
+const coveredPercent = (target: Locator) =>
+  target.evaluate((element) => {
+    const match = /inset\(([^)]+)\)/.exec(getComputedStyle(element).clipPath);
+    if (!match?.[1]) return 0;
+    return Number.parseFloat(match[1].split(/\s+/)[1] ?? '0');
+  });
+
+test.describe('section reveals', () => {
+  test('holds a section back until it is scrolled to', async ({ page }) => {
+    await gotoReady(page, '/');
+
+    const first = revealIn(page, 'about').locator('> *').first();
+    await expect.poll(() => opacity(first), { timeout: 10_000 }).toBe('0');
+
+    await first.scrollIntoViewIfNeeded();
+
+    await expect.poll(() => opacity(first), { timeout: 10_000 }).toBe('1');
+  });
+
+  test('uncovers the accent band left to right without fading it', async ({ page }) => {
+    await gotoReady(page, '/');
+
+    const figure = revealIn(page, 'contact').locator('> *').first();
+    await expect.poll(() => coveredPercent(figure), { timeout: 10_000 }).toBeGreaterThan(50);
+    // The whole point of the wipe: it is a mask moving, never a fade.
+    expect(await opacity(figure)).toBe('1');
+
+    await figure.scrollIntoViewIfNeeded();
+
+    await expect.poll(() => coveredPercent(figure), { timeout: 10_000 }).toBe(0);
+    expect(await opacity(figure)).toBe('1');
+  });
+
+  test('staggers the children, not the container', async ({ page }) => {
+    await gotoReady(page, '/');
+
+    const projects = revealIn(page, 'projects');
+    await expect
+      .poll(() => opacity(projects.locator('> *').first()), { timeout: 10_000 })
+      .toBe('0');
+    // The container carries the trigger and must never be the thing that moves.
+    expect(await opacity(projects)).toBe('1');
+  });
+
+  test('reveals the panel a deep link opens', async ({ page }) => {
+    await gotoReady(page, '/#stack-backend');
+
+    await expect(page.getByRole('button', { name: 'Backend' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    await expect.poll(() => opacity(revealIn(page, 'stack')), { timeout: 10_000 }).toBe('1');
+  });
+});
+
+test.describe('section reveals under reduced motion', () => {
+  test.beforeEach(async ({ page }) => {
+    // Emulated before navigation: the runtime decides whether to exist during its mount effect.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+  });
+
+  test('leaves every section on screen and untouched', async ({ page }) => {
+    await gotoReady(page, '/');
+    await page.waitForTimeout(1200);
+
+    const styled = await page.locator('[data-reveal]').evaluateAll((containers) => {
+      const offenders: string[] = [];
+
+      for (const container of containers) {
+        for (const element of [container, ...container.children]) {
+          const style = getComputedStyle(element);
+          if (style.opacity !== '1' || style.clipPath !== 'none') offenders.push(element.tagName);
+        }
+      }
+
+      return offenders;
+    });
+
+    expect(styled).toEqual([]);
+  });
+});

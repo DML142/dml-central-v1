@@ -1,6 +1,7 @@
 'use client';
 
 import { IndexLabel } from '@/components/common/IndexLabel';
+import { Reveal } from '@/components/common/Reveal';
 import { STEPS } from '@/content/site';
 import { useTranslate } from '@/hooks/use-translate';
 
@@ -8,7 +9,7 @@ export function Steps() {
   const t = useTranslate();
 
   return (
-    <div className="border-line grid grid-cols-1 border-t md:grid-cols-3">
+    <Reveal variant="wipe" stagger className="border-line grid grid-cols-1 border-t md:grid-cols-3">
       {STEPS.map((step) => (
         <div
           key={step.index}
@@ -19,6 +20,6 @@ export function Steps() {
           <p className="mono-copy text-text-muted mt-2">{t(step.textKey)}</p>
         </div>
       ))}
-    </div>
+    </Reveal>
   );
 }

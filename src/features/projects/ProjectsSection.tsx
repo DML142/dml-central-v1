@@ -1,5 +1,6 @@
 'use client';
 
+import { Reveal } from '@/components/common/Reveal';
 import { SectionShell } from '@/components/layout/SectionShell';
 import { PROJECTS } from '@/content/projects';
 import { ProjectCard } from '@/features/projects/ProjectCard';
@@ -11,11 +12,11 @@ export function ProjectsSection() {
 
   return (
     <SectionShell id="projects" title={t('projects.title')} count="02">
-      <div className="grid grid-cols-1 lg:grid-cols-2">
+      <Reveal stagger className="grid grid-cols-1 lg:grid-cols-2">
         {PROJECTS.map((project) => (
           <ProjectCard key={project.id} project={project} />
         ))}
-      </div>
+      </Reveal>
 
       <ProjectGalleryModal />
     </SectionShell>

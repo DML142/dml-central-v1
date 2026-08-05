@@ -1,6 +1,7 @@
 'use client';
 
 import { Eyebrow } from '@/components/common/Eyebrow';
+import { Reveal } from '@/components/common/Reveal';
 import { SectionShell } from '@/components/layout/SectionShell';
 import { ABOUT_FACTS } from '@/content/site';
 import { useTranslate } from '@/hooks/use-translate';
@@ -10,7 +11,10 @@ export function About() {
 
   return (
     <SectionShell id="about" title={t('about.title')} count="05">
-      <div className="section-gutter lg:about-columns grid grid-cols-1 gap-8 py-8 lg:gap-16">
+      <Reveal
+        stagger
+        className="section-gutter lg:about-columns grid grid-cols-1 gap-8 py-8 lg:gap-16"
+      >
         <p className="text-text-muted max-w-prose">{t('about.copy')}</p>
 
         <dl className="border-line flex flex-col border-t lg:border-t-0">
@@ -26,7 +30,7 @@ export function About() {
             </div>
           ))}
         </dl>
-      </div>
+      </Reveal>
     </SectionShell>
   );
 }
