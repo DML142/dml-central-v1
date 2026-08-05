@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
+
 import { CtaButton } from '@/components/common/CtaButton';
 import { Eyebrow } from '@/components/common/Eyebrow';
 import { Reveal } from '@/components/common/Reveal';
@@ -16,6 +18,19 @@ export function Hero({ field }: Props) {
   const t = useTranslate();
   const locale = useLocale();
   const openContact = useUiStore((state) => state.openContact);
+  const isContactOpen = useUiStore((state) => state.isContactOpen);
+  const contactSource = useUiStore((state) => state.contactSource);
+
+  // Focus goes back the moment the store closes, not when the fade ends — the keyboard never
+  // waits on an animation (tech.md 9.3).
+  const ctaButton = useRef<HTMLButtonElement>(null);
+  const wasOpen = useRef(false);
+
+  useEffect(() => {
+    const isOpen = isContactOpen && contactSource === 'hero';
+    if (wasOpen.current && !isOpen) ctaButton.current?.focus();
+    wasOpen.current = isOpen;
+  }, [isContactOpen, contactSource]);
 
   // A split reveal rewrites its element into pieces. Keying on the locale makes React throw that
   // markup away and mount the new copy clean, instead of patching text into a DOM it no longer
@@ -48,6 +63,7 @@ export function Hero({ field }: Props) {
               mask instead, which needs no rewriting of the DOM. */}
           <Reveal variant="wipe" immediate>
             <CtaButton
+              ref={ctaButton}
               onClick={() => {
                 openContact('hero');
               }}
