@@ -134,7 +134,16 @@ test.describe('contact form', () => {
       .fill('A message comfortably past the ten character floor.');
   };
 
+  // Telegram is never called for real in a test (`tech.md` §14) — the browser's own POST to
+  // `/api/contact` is intercepted rather than letting the real route run, so the outcome is
+  // deterministic regardless of which credentials the running server happens to hold.
+  const mockContactApi = (page: Page, status: number, body: unknown) =>
+    page.route('**/api/contact', async (route) => {
+      await route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) });
+    });
+
   test('confirms a valid submission and offers to send another', async ({ page }) => {
+    await mockContactApi(page, 200, { ok: true });
     await fillValid(page);
     // The form rejects anything faster than the two-second fill-time floor.
     await page.waitForTimeout(2100);
@@ -145,6 +154,31 @@ test.describe('contact form', () => {
 
     await page.getByRole('button', { name: 'Send another' }).click();
     await expect(page.getByRole('button', { name: 'Send message' })).toBeVisible();
+  });
+
+  test('shows a server error and lets the user retry', async ({ page }) => {
+    await mockContactApi(page, 502, { ok: false, error: 'delivery' });
+    await fillValid(page);
+    await page.waitForTimeout(2100);
+
+    await page.getByRole('button', { name: 'Send message' }).click();
+
+    await expect(page.getByRole('alert')).toHaveText(
+      'The message did not go through. Try again in a moment.',
+    );
+    await expect(page.getByText('Message sent.')).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Send message' })).toBeEnabled();
+  });
+
+  test('shows a rate-limited message without touching any form field', async ({ page }) => {
+    await mockContactApi(page, 429, { ok: false, error: 'rate_limited', retryAfter: 120 });
+    await fillValid(page);
+    await page.waitForTimeout(2100);
+
+    await page.getByRole('button', { name: 'Send message' }).click();
+
+    await expect(page.getByRole('alert')).toHaveText('Too many messages. Try again in 2 min.');
+    await expect(page.getByText('Message sent.')).toBeHidden();
   });
 
   test('explains a submission that trips the fill-time floor', async ({ page }) => {
