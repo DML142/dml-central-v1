@@ -47,3 +47,12 @@ What Embla would have supplied is supplied instead by:
   come back for this one.
 
 `tech.md` §2.2 has been updated to record why the row is struck through.
+
+## Amendment, 2026-08-04
+
+The swipe hook reads **touch events** for touch input, not pointer events. Inside a Radix dialog the
+scroll lock calls `preventDefault` on `touchmove`, and iOS answers that by cancelling the pointer
+sequence — `pointercancel` arrives instead of `pointerup` — so the pointer-only version saw every
+swipe on a phone as an abandoned gesture while taps kept working. Pointer events still serve mouse
+and pen, and a `pointerType === 'touch'` event is ignored there so one finger is never counted
+twice.

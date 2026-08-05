@@ -10,7 +10,10 @@ translations of it.
 ## Stack
 
 Next.js 16 (App Router) · React 19 · TypeScript strict · Tailwind CSS v4 · shadcn/ui · GSAP ·
-Zustand · Zod · React Hook Form. Three.js and React Three Fiber arrive with the hero particle field.
+Zustand · Zod · React Hook Form · Three.js r179 with React Three Fiber for the hero particle field.
+
+Three is pinned: r185 deprecates `THREE.Clock`, which React Three Fiber still uses, and the warning
+it prints breaks the no-console-noise rule the project holds itself to.
 
 ## Requirements
 
@@ -62,10 +65,10 @@ docs/adr/          Architecture decision records
 prototype/         Throwaway static HTML that locked the layout; deleted after phase 3
 public/            Self-hosted fonts, project screenshots, OG assets
 src/app/           Routes, root layout, global tokens
-src/components/    ui (shadcn), layout (frame chrome), common (primitives)
+src/components/    ui (shadcn), layout (frame chrome), common (primitives), three (canvas host)
 src/features/      hero, projects, stack, contact — each owns its components and tests
 src/hooks/         Shared behaviour
-src/lib/           Pure logic: telegram, validation, env, utils
+src/lib/           Pure logic: three (field simulation), telegram, validation, env, utils
 src/stores/        Zustand stores
 src/content/       Typed content and the three locale dictionaries
 src/config/        Motion, breakpoints, particle parameters
