@@ -3,6 +3,9 @@ import type { TranslationKey } from '@/content/i18n';
 export const SITE = {
   brand: 'DML',
   domain: 'dml-central.dev',
+  // Metadata is served before the locale is known, so it stays in the English source (tech.md 19.4).
+  title: 'DML — Full-stack engineer',
+  description: 'Next.js, NestJS and Docker fullstack developer. Creative sites that actually work.',
 } as const;
 
 export interface RailLink {

@@ -1,11 +1,11 @@
 import { z } from 'zod';
 
+import { siteUrlSchema } from '@/lib/public-env';
+
 const envSchema = z.object({
   TELEGRAM_BOT_TOKEN: z.string().min(1),
   TELEGRAM_CHAT_ID: z.string().min(1),
-  // Pinning the protocol is what rejects `localhost:3000`, which otherwise parses as a URL with
-  // the scheme `localhost:`. The hostname stays unconstrained so local development works.
-  NEXT_PUBLIC_SITE_URL: z.url({ protocol: /^https?$/ }),
+  NEXT_PUBLIC_SITE_URL: siteUrlSchema,
 });
 
 export type Env = z.infer<typeof envSchema>;

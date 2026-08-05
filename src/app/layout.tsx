@@ -1,14 +1,43 @@
 import './globals.css';
 
+import { FooterBar } from '@/components/layout/FooterBar';
+import { FrameBox, FrameGrid } from '@/components/layout/FrameGrid';
+import { LocaleSync } from '@/components/layout/LocaleSync';
+import { SideRail } from '@/components/layout/SideRail';
+import { SkipLink } from '@/components/layout/SkipLink';
+import { SmoothScrollHost } from '@/components/layout/SmoothScrollHost';
+import { TopBar } from '@/components/layout/TopBar';
+import { SITE } from '@/content/site';
+import { ContactModal } from '@/features/contact/ContactModal';
+import { SITE_URL } from '@/lib/public-env';
+
 import type { Metadata, Viewport } from 'next';
 
 export const metadata: Metadata = {
-  title: 'DML — Full-stack engineer',
-  description: 'Next.js, NestJS and Docker fullstack developer. Creative sites that actually work.',
+  metadataBase: new URL(SITE_URL),
+  title: SITE.title,
+  description: SITE.description,
+  applicationName: SITE.brand,
+  alternates: { canonical: '/' },
+  openGraph: {
+    type: 'website',
+    url: '/',
+    siteName: SITE.brand,
+    title: SITE.title,
+    description: SITE.description,
+    locale: 'en_US',
+    alternateLocale: ['uk_UA', 'ru_RU'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: SITE.title,
+    description: SITE.description,
+  },
 };
 
 export const viewport: Viewport = {
   themeColor: '#07060B',
+  colorScheme: 'dark',
 };
 
 interface Props {
@@ -29,7 +58,28 @@ export default function RootLayout({ children }: Props) {
           crossOrigin="anonymous"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <LocaleSync />
+        <SkipLink />
+
+        <SmoothScrollHost />
+
+        <FrameGrid>
+          <TopBar />
+
+          <FrameBox>
+            <SideRail />
+
+            <main id="main" className="min-w-0">
+              {children}
+            </main>
+          </FrameBox>
+
+          <FooterBar />
+        </FrameGrid>
+
+        <ContactModal />
+      </body>
     </html>
   );
 }

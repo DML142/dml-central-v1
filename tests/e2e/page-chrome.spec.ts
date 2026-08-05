@@ -35,6 +35,20 @@ test.describe('page chrome', () => {
     await expect(focused).toBeInViewport();
   });
 
+  test('describes the document to a crawler and to a browser chrome', async ({ page }) => {
+    await expect(page).toHaveTitle('DML — Full-stack engineer');
+
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', /^https?:\/\/.+/);
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+      'content',
+      /fullstack developer/,
+    );
+    await expect(page.locator('meta[property="og:type"]')).toHaveAttribute('content', 'website');
+    await expect(page.locator('meta[property="og:locale"]')).toHaveAttribute('content', 'en_US');
+    await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute('content', '#07060B');
+    await expect(page.locator('meta[name="color-scheme"]')).toHaveAttribute('content', 'dark');
+  });
+
   test('renders the hero field without exposing it to assistive tech', async ({ page }) => {
     const field = page.locator('svg').first();
 
