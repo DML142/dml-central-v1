@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 
 import { Eyebrow } from '@/components/common/Eyebrow';
 import { IndexLabel } from '@/components/common/IndexLabel';
+import { Reveal } from '@/components/common/Reveal';
 import { SectionShell } from '@/components/layout/SectionShell';
 import {
   Accordion,
@@ -42,34 +43,36 @@ export function StackSection() {
 
   return (
     <SectionShell id="stack" title={t('stack.title')} count="06">
-      <Accordion
-        type="multiple"
-        value={openPanels}
-        onValueChange={setOpenPanels}
-        className="border-line border-t"
-      >
-        {STACK.map((category) => (
-          <AccordionItem key={category.id} value={category.id} id={panelId(category.id)}>
-            <AccordionTrigger>
-              <IndexLabel className="group-hover:text-violet group-data-[state=open]:text-violet">
-                {category.index}
-              </IndexLabel>
-              <span className="font-display text-title leading-none uppercase">
-                {t(category.nameKey)}
-              </span>
-              <Eyebrow>({category.items.length})</Eyebrow>
-            </AccordionTrigger>
+      <Reveal>
+        <Accordion
+          type="multiple"
+          value={openPanels}
+          onValueChange={setOpenPanels}
+          className="border-line border-t"
+        >
+          {STACK.map((category) => (
+            <AccordionItem key={category.id} value={category.id} id={panelId(category.id)}>
+              <AccordionTrigger>
+                <IndexLabel className="group-hover:text-violet group-data-[state=open]:text-violet">
+                  {category.index}
+                </IndexLabel>
+                <span className="font-display text-title leading-none uppercase">
+                  {t(category.nameKey)}
+                </span>
+                <Eyebrow>({category.items.length})</Eyebrow>
+              </AccordionTrigger>
 
-            <AccordionContent>
-              <div className="flex flex-wrap gap-2">
-                {category.items.map((item) => (
-                  <StackChip key={item.id} item={item} />
-                ))}
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        ))}
-      </Accordion>
+              <AccordionContent>
+                <div className="flex flex-wrap gap-2">
+                  {category.items.map((item) => (
+                    <StackChip key={item.id} item={item} />
+                  ))}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      </Reveal>
     </SectionShell>
   );
 }

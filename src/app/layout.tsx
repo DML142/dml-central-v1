@@ -3,9 +3,9 @@ import './globals.css';
 import { FooterBar } from '@/components/layout/FooterBar';
 import { FrameBox, FrameGrid } from '@/components/layout/FrameGrid';
 import { LocaleSync } from '@/components/layout/LocaleSync';
+import { MotionHost } from '@/components/layout/MotionHost';
 import { SideRail } from '@/components/layout/SideRail';
 import { SkipLink } from '@/components/layout/SkipLink';
-import { SmoothScrollHost } from '@/components/layout/SmoothScrollHost';
 import { TopBar } from '@/components/layout/TopBar';
 import { Toaster } from '@/components/ui/sonner';
 import { SITE } from '@/content/site';
@@ -66,7 +66,7 @@ export default function RootLayout({ children }: Props) {
         <LocaleSync />
         <SkipLink />
 
-        <SmoothScrollHost />
+        <MotionHost />
 
         <FrameGrid>
           <TopBar />

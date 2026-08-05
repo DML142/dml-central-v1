@@ -1,6 +1,7 @@
 'use client';
 
 import { CtaButton } from '@/components/common/CtaButton';
+import { Reveal } from '@/components/common/Reveal';
 import { useTranslate } from '@/hooks/use-translate';
 import { useUiStore } from '@/stores/ui-store';
 
@@ -12,24 +13,30 @@ export function ContactBand() {
   return (
     <section
       aria-labelledby="contact-title"
-      className="border-line bg-violet text-void section-gutter lg:band-columns grid grid-cols-1 gap-6 border-t py-12 lg:items-center lg:gap-16"
+      className="border-line bg-violet text-void section-gutter border-t py-12"
     >
-      <h2 id="contact-title" className="display text-display-lg">
-        {t('band.figure')}
-      </h2>
+      <Reveal
+        variant="wipe"
+        stagger
+        className="lg:band-columns grid grid-cols-1 gap-6 lg:items-center lg:gap-16"
+      >
+        <h2 id="contact-title" className="display text-display-lg">
+          {t('band.figure')}
+        </h2>
 
-      <p className="mono-copy leading-band max-w-band-copy">{t('band.copy')}</p>
+        <p className="mono-copy leading-band max-w-band-copy">{t('band.copy')}</p>
 
-      <div className="flex items-end">
-        <CtaButton
-          variant="inverted"
-          onClick={() => {
-            openContact('footer');
-          }}
-        >
-          {t('band.cta')}
-        </CtaButton>
-      </div>
+        <div className="flex items-end">
+          <CtaButton
+            variant="inverted"
+            onClick={() => {
+              openContact('footer');
+            }}
+          >
+            {t('band.cta')}
+          </CtaButton>
+        </div>
+      </Reveal>
     </section>
   );
 }
