@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 
-import { Chip } from '@/components/common/Chip';
 import { Eyebrow } from '@/components/common/Eyebrow';
 import { IndexLabel } from '@/components/common/IndexLabel';
 import { SectionShell } from '@/components/layout/SectionShell';
@@ -14,6 +13,7 @@ import {
 } from '@/components/ui/accordion';
 import { BREAKPOINTS } from '@/config/breakpoints';
 import { STACK } from '@/content/stack';
+import { StackChip } from '@/features/stack/StackChip';
 import { useTranslate } from '@/hooks/use-translate';
 import { useStackStore } from '@/stores/stack-store';
 
@@ -63,10 +63,7 @@ export function StackSection() {
             <AccordionContent>
               <div className="flex flex-wrap gap-2">
                 {category.items.map((item) => (
-                  <Chip key={item.id}>
-                    {item.label}
-                    {item.version ? ` ${item.version}` : ''}
-                  </Chip>
+                  <StackChip key={item.id} item={item} />
                 ))}
               </div>
             </AccordionContent>
