@@ -3,7 +3,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const cta = cva(
-  'micro inline-flex min-h-11 cursor-pointer items-center gap-3 rounded-full border px-6 py-3 font-medium no-underline transition-colors duration-(--dur-fast) ease-out disabled:cursor-not-allowed disabled:opacity-45',
+  'micro relative inline-flex min-h-11 cursor-pointer items-center justify-between gap-6 border px-(--cta-pad-x) py-3 font-medium no-underline transition-colors duration-(--dur-fast) ease-out disabled:cursor-not-allowed disabled:opacity-45',
   {
     variants: {
       variant: {
@@ -29,6 +29,7 @@ export function CtaButton({ children, variant, className, type = 'button', ...pr
     <button type={type} className={cn(cta({ variant }), className)} {...props}>
       {children}
       <span aria-hidden="true">→</span>
+      <span aria-hidden="true" className="cta-rule" />
     </button>
   );
 }

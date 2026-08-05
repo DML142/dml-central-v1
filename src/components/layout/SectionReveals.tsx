@@ -23,6 +23,16 @@ const REVEAL_EASE = 'reveal-out';
 const WIPE_FROM = 'inset(-100% 100% -100% 0)';
 const WIPE_TO = 'inset(-100% 0% -100% 0)';
 
+/**
+ * Marks a block as arrived. A reveal moves things that can be clicked — a project card carries the
+ * button that opens its gallery — and until it settles the page is quietly lying about where those
+ * controls are. Publishing the finish makes that observable rather than a matter of guessing at
+ * durations, which is the same bargain as `data-hydrated` and `data-motion`.
+ */
+const markDone = (element: HTMLElement) => {
+  element.dataset.revealDone = '';
+};
+
 const buildBlockReveal = (gsap: Gsap, plan: RevealPlan, delay: number, trigger: object) => {
   const isWipe = plan.variant === 'wipe';
 
@@ -34,7 +44,10 @@ const buildBlockReveal = (gsap: Gsap, plan: RevealPlan, delay: number, trigger: 
     ease: REVEAL_EASE,
     stagger: REVEAL.stagger,
     ...(plan.immediate ? { delay } : trigger),
-    ...(isWipe ? { onComplete: () => gsap.set(plan.targets, { clearProps: 'clipPath' }) } : {}),
+    onComplete: () => {
+      if (isWipe) gsap.set(plan.targets, { clearProps: 'clipPath' });
+      markDone(plan.trigger);
+    },
   });
 };
 
@@ -57,6 +70,7 @@ const buildTextReveal = (
   trigger: object,
 ) => {
   const isLines = plan.variant === 'lines';
+  let pending = plan.targets.length;
 
   for (const [index, target] of plan.targets.entries()) {
     // Each element is cut on its own, so the cascade across them has to be built here: without it
@@ -77,6 +91,8 @@ const buildTextReveal = (
     const pieces = isLines ? split.lines : split.chars;
     if (pieces.length === 0) {
       split.revert();
+      pending -= 1;
+      if (pending === 0) markDone(plan.trigger);
       continue;
     }
 
@@ -88,6 +104,10 @@ const buildTextReveal = (
       ...(plan.immediate ? { delay: offset } : trigger),
       onComplete: () => {
         split.revert();
+        pending -= 1;
+        // Each element is cut and animated on its own, so the block has arrived only once the
+        // last of them has put its text back.
+        if (pending === 0) markDone(plan.trigger);
       },
     });
   }
@@ -136,6 +156,10 @@ export function SectionReveals() {
         let step = 0;
 
         for (const plan of planReveals(document)) {
+          // A rebuild (a locale switch) re-runs every reveal, so a mark left from the last pass
+          // would claim the block had arrived before it moved.
+          delete plan.trigger.dataset.revealDone;
+
           // The load sequence is ordered by the document, so the page assembles top down.
           const delay = plan.immediate ? step++ * SEQUENCE.step : 0;
 

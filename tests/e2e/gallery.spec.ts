@@ -4,8 +4,23 @@ import { gotoReady } from './support';
 
 const openGallery = async (page: Page, index = 0) => {
   await gotoReady(page, '/');
-  await page.getByRole('button', { name: 'Open gallery' }).nth(index).click();
-  await expect(page.getByRole('dialog')).toBeVisible();
+
+  // The card the button sits on is still being revealed until its block reports in, and clicking
+  // a control that is mid-flight is how a click ends up landing on nothing.
+  const trigger = page.getByRole('button', { name: 'Open gallery' }).nth(index);
+  await trigger.scrollIntoViewIfNeeded();
+  await expect(page.locator('[data-reveal]').filter({ has: trigger })).toHaveAttribute(
+    'data-reveal-done',
+    '',
+  );
+
+  await trigger.click();
+
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  // Visible is not settled: the panel enters on `translateY: 8px → 0` over `--dur-base`
+  // (tech.md 9.3), so every box measured before that finishes is a box mid-flight.
+  await dialog.evaluate((node) => Promise.all(node.getAnimations().map((a) => a.finished)));
 };
 
 test.describe('gallery modal', () => {

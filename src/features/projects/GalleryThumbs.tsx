@@ -41,8 +41,8 @@ export function GalleryThumbs({ images, activeSlide, onSelect }: Props) {
               onSelect(index);
             }}
             className={cn(
-              'border-line bg-void w-24 shrink-0 cursor-pointer border p-0 transition-colors duration-(--dur-fast)',
-              isActive && 'border-violet',
+              'border-line bg-void w-24 shrink-0 cursor-pointer border p-0 transition duration-(--dur-fast)',
+              isActive && 'border-violet scale-105',
             )}
           >
             {/* `contain`, not `cover`: the shots run from 0.38 to 2.39 aspect, and cropping a
