@@ -143,6 +143,9 @@ export const en = {
   'err.messageLong': 'Message must be {n} characters or fewer.',
   'err.banner': 'Could not send the message. Wait a moment and try again.',
   'err.announce': 'The form has errors. Check the highlighted fields.',
+  'err.rateLimited': 'Too many messages. Try again in {n} min.',
+  'err.delivery': 'The message did not go through. Try again in a moment.',
+  'err.network': 'Could not reach the server. Check your connection and try again.',
 } as const;
 
 export type TranslationKey = keyof typeof en;

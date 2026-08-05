@@ -7,6 +7,7 @@ import { SideRail } from '@/components/layout/SideRail';
 import { SkipLink } from '@/components/layout/SkipLink';
 import { SmoothScrollHost } from '@/components/layout/SmoothScrollHost';
 import { TopBar } from '@/components/layout/TopBar';
+import { Toaster } from '@/components/ui/sonner';
 import { SITE } from '@/content/site';
 import { ContactModal } from '@/features/contact/ContactModal';
 import { SITE_URL } from '@/lib/public-env';
@@ -82,6 +83,7 @@ export default function RootLayout({ children }: Props) {
         </FrameGrid>
 
         <ContactModal />
+        <Toaster />
       </body>
     </html>
   );
