@@ -6,7 +6,7 @@ import { SITE_URL } from '@/lib/public-env';
 import { RateLimiter } from '@/lib/rate-limit';
 import { TelegramClient } from '@/lib/telegram/client';
 import { buildContactMessage } from '@/lib/telegram/message-template';
-import { createContactSchema } from '@/lib/validation/contact';
+import { createContactSchema, type ContactResponse } from '@/lib/validation/contact';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -20,12 +20,6 @@ const telegramClient = new TelegramClient({
   chatId: env.TELEGRAM_CHAT_ID,
 });
 const schema = createContactSchema((key, vars) => translate('en', key, vars));
-
-export type ContactResponse =
-  | { ok: true }
-  | { ok: false; error: 'validation'; fields: Record<string, string> }
-  | { ok: false; error: 'rate_limited'; retryAfter: number }
-  | { ok: false; error: 'delivery' };
 
 function getClientIp(request: Request): string {
   const forwardedFor = request.headers.get('x-forwarded-for');
