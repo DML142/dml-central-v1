@@ -47,3 +47,10 @@ export function createContactSchema(t: Translate) {
 export type ContactSchema = ReturnType<typeof createContactSchema>;
 export type ContactInput = z.input<ContactSchema>;
 export type ContactValues = z.output<ContactSchema>;
+
+/** The `POST /api/contact` response contract (`tech.md` §7.3), shared by the route and the form. */
+export type ContactResponse =
+  | { ok: true }
+  | { ok: false; error: 'validation'; fields: Record<string, string> }
+  | { ok: false; error: 'rate_limited'; retryAfter: number }
+  | { ok: false; error: 'delivery' };

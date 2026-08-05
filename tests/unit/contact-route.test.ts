@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 
-import type { ContactResponse } from '@/app/api/contact/route';
+import type { ContactResponse } from '@/lib/validation/contact';
 
 const ENV = {
   TELEGRAM_BOT_TOKEN: '123:dummy',
