@@ -44,7 +44,7 @@ export function ProjectCard({ project }: Props) {
       <div className="flex items-start justify-between gap-4">
         <IndexLabel className="group-hover:text-violet">{project.index}</IndexLabel>
         {project.status === 'deprecated' ? (
-          <span className="micro text-danger border border-current px-3 py-1 opacity-60">
+          <span className="micro text-danger border border-current px-3 py-1 opacity-85">
             {t(project.statusKey)}
           </span>
         ) : (
