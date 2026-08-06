@@ -3,7 +3,7 @@ import type { Dictionary } from './en';
 export const uk: Dictionary = {
   skip: 'Перейти до вмісту',
   'meta.identity': 'DML — Fullstack-розробник, системи та інтерфейси',
-  'meta.attribution': 'Портфоліо — v1 · з 2026',
+  'meta.attribution': 'Портфоліо — v1',
   'meta.domain': 'dml-central.dev',
   'meta.location': 'Віддалено · 2026',
   'lang.label': 'Мова',

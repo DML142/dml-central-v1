@@ -4,7 +4,7 @@
 export const en = {
   skip: 'Skip to content',
   'meta.identity': 'DML — Full-stack engineer, systems & interfaces',
-  'meta.attribution': 'Portfolio — v1 · Est. 2026',
+  'meta.attribution': 'Portfolio — v1',
   'meta.domain': 'dml-central.dev',
   'meta.location': 'Remote · 2026',
   'lang.label': 'Language',
