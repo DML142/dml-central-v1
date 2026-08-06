@@ -239,10 +239,9 @@ test.describe('responsive', () => {
     });
   }
 
-  // The Cyrillic type scale check from roadmap 1.8: Oswald is narrower than the Anton it replaced,
-  // and Ukrainian and Russian run longer than the English source.
+  // The Cyrillic type scale check from roadmap 1.8: Oswald is narrower, and UK/RU run longer.
   for (const [locale, label] of Object.entries(SWITCHER_LABELS)) {
-    for (const width of [320, 744, 1280]) {
+    for (const width of WIDTHS) {
       test(`holds the type scale in ${locale} at ${width}px`, async ({ page }) => {
         await page.setViewportSize({ width, height: 900 });
         await gotoReady(page, '/');
