@@ -77,6 +77,11 @@ const buildTextReveal = (
     // every line of a three-column step row would start in the same frame.
     const offset = delay + index * REVEAL.stagger;
 
+    // `aria: 'auto'` puts the pre-split text in an `aria-label` on `target` itself. A heading
+    // already has a nameable role; a bare `span`/`p` (role `generic`/`paragraph`) does not, and
+    // `aria-label` there is invalid ARIA that a screen reader is free to ignore.
+    if (!/^H[1-6]$/.test(target.tagName)) target.setAttribute('role', 'text');
+
     const split = SplitText.create(target, {
       // Words are cut alongside characters even though only the characters animate: without a
       // wrapper per word every character is its own inline box, and the browser will happily
