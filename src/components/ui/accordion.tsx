@@ -33,7 +33,7 @@ function AccordionTrigger({
         <AccordionPrimitive.Trigger
           data-slot="accordion-trigger"
           className={cn(
-            'section-gutter hover:bg-surface group stack-trigger-columns grid min-h-11 w-full cursor-pointer items-center gap-4 border-0 bg-transparent py-4 text-left transition-colors duration-(--dur-fast) outline-none',
+            'section-gutter hover:bg-surface group stack-trigger-columns grid min-h-11 w-full cursor-pointer items-center gap-4 border-0 bg-transparent py-4 text-left transition-colors duration-(--dur-fast)',
             className,
           )}
           {...props}
