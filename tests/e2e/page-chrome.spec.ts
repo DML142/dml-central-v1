@@ -77,6 +77,26 @@ test.describe('locale switching', () => {
     );
   });
 
+  test('applies ?lang= for a first-time visitor and persists it', async ({ page }) => {
+    await gotoReady(page, '/?lang=ua');
+
+    await expect(page.locator('html')).toHaveAttribute('lang', 'uk');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Системи, які не падають.');
+
+    await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('lang', 'uk');
+  });
+
+  test('lets an already-stored locale win over ?lang=', async ({ page }) => {
+    await gotoReady(page, '/');
+    await page.getByRole('button', { name: 'RU', exact: true }).click();
+    await expect(page.locator('html')).toHaveAttribute('lang', 'ru');
+
+    await gotoReady(page, '/?lang=uk');
+
+    await expect(page.locator('html')).toHaveAttribute('lang', 'ru');
+  });
+
   test('remembers the choice across a reload', async ({ page }) => {
     await gotoReady(page, '/');
     await page.getByRole('button', { name: 'RU', exact: true }).click();
