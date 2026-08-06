@@ -59,12 +59,8 @@ test.describe('page chrome', () => {
 });
 
 test.describe('keyboard traversal', () => {
-  // tech.md §14 item 5: full keyboard traversal with no trap outside a modal. Every stop gets a
-  // stable probe id on first visit rather than being matched by text, so the assertion holds
-  // regardless of copy or item counts. What happens once Tab runs past the last control is
-  // engine-specific in headless mode — Chromium and WebKit wrap to the top, Firefox just stays on
-  // the last element — so the contract checked here is reachability and a visible ring on the way,
-  // not a specific wrap target.
+  // tech.md §14 item 5. Past the last control, Chromium/WebKit wrap to the top and Firefox just
+  // stays put in headless mode, so the contract checked here stops at reachability and the ring.
   test('reaches every control, each with a visible ring, and never traps midway', async ({
     page,
   }) => {
