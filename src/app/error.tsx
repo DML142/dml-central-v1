@@ -10,8 +10,7 @@ interface Props {
   reset: () => void;
 }
 
-// Rendered before the locale is known, same reasoning as metadata (tech.md 19.4) — English only.
-// The message stays generic: the real error is logged, never shown (tech.md 6.8).
+// English only, no locale yet (tech.md 19.4); the real error is logged, never shown (tech.md 6.8).
 export default function Error({ error, reset }: Props) {
   useEffect(() => {
     console.error(error);
