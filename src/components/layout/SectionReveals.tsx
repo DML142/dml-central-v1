@@ -77,6 +77,9 @@ const buildTextReveal = (
     // every line of a three-column step row would start in the same frame.
     const offset = delay + index * REVEAL.stagger;
 
+    // `aria: 'auto'` labels `target` itself; a heading is nameable already, a bare span/p isn't.
+    if (!/^H[1-6]$/.test(target.tagName)) target.setAttribute('role', 'text');
+
     const split = SplitText.create(target, {
       // Words are cut alongside characters even though only the characters animate: without a
       // wrapper per word every character is its own inline box, and the browser will happily
