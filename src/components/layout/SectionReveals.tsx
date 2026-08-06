@@ -77,9 +77,7 @@ const buildTextReveal = (
     // every line of a three-column step row would start in the same frame.
     const offset = delay + index * REVEAL.stagger;
 
-    // `aria: 'auto'` puts the pre-split text in an `aria-label` on `target` itself. A heading
-    // already has a nameable role; a bare `span`/`p` (role `generic`/`paragraph`) does not, and
-    // `aria-label` there is invalid ARIA that a screen reader is free to ignore.
+    // `aria: 'auto'` labels `target` itself; a heading is nameable already, a bare span/p isn't.
     if (!/^H[1-6]$/.test(target.tagName)) target.setAttribute('role', 'text');
 
     const split = SplitText.create(target, {

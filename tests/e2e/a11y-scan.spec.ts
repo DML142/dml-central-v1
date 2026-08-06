@@ -3,9 +3,7 @@ import { expect, test, type Page } from '@playwright/test';
 
 import { gotoReady } from './support';
 
-// tech.md §14 item 7: axe on the page and with each modal open, zero serious/critical violations.
-// `color-contrast` is disabled here — it found real token-level failures that are roadmap 9.3's
-// job, not this slice's. Re-enable once 9.3 lands.
+// tech.md §14 item 7. `color-contrast` is disabled — it found real failures that are 9.3's job.
 const assertNoSeriousViolations = async (page: Page) => {
   const results = await new AxeBuilder({ page }).disableRules(['color-contrast']).analyze();
   const blocking = results.violations.filter(
