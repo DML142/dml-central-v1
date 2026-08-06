@@ -12,6 +12,7 @@ import { MOTION_HOLD_MS } from '@/config/motion';
 import { SITE } from '@/content/site';
 import { ContactModal } from '@/features/contact/ContactModal';
 import { SITE_URL } from '@/lib/public-env';
+import { buildPersonJsonLd, buildWebsiteJsonLd } from '@/lib/structured-data';
 
 import type { Metadata, Viewport } from 'next';
 
@@ -71,6 +72,15 @@ export default function RootLayout({ children }: Props) {
           as="font"
           type="font/woff2"
           crossOrigin="anonymous"
+        />
+
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(buildPersonJsonLd(SITE_URL)) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(buildWebsiteJsonLd(SITE_URL)) }}
         />
       </head>
       <body>

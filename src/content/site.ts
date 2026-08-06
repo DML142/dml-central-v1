@@ -8,6 +8,15 @@ export const SITE = {
   description: 'Next.js, NestJS and Docker fullstack developer. Creative sites that actually work.',
 } as const;
 
+// JSON-LD Person facts (tech.md §16). Same English-source reasoning as SITE above — structured
+// data is served before the locale is known — and the same facts as tech.md §18.1.
+export const PERSON = {
+  name: 'Maxim',
+  jobTitle: 'Full-stack engineer',
+  nationality: 'Ukraine',
+  languages: ['uk', 'ru', 'en'],
+} as const;
+
 export interface RailLink {
   id: string;
   labelKey: TranslationKey;
