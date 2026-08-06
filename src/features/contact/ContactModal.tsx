@@ -29,6 +29,10 @@ export function ContactModal() {
       <DialogContent
         aria-describedby={undefined}
         className="md:max-w-form md:inset-auto md:top-1/2 md:left-1/2 md:h-auto md:w-full md:-translate-1/2"
+        onCloseAutoFocus={(event) => {
+          // The button that opened it has already taken focus back.
+          event.preventDefault();
+        }}
       >
         <div className="border-line section-gutter flex items-center justify-between gap-4 border-b py-4">
           <DialogTitle>{t('form.title')}</DialogTitle>

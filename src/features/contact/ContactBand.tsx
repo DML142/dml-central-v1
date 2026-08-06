@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
+
 import { CtaButton } from '@/components/common/CtaButton';
 import { Reveal } from '@/components/common/Reveal';
 import { useTranslate } from '@/hooks/use-translate';
@@ -9,6 +11,19 @@ import { useUiStore } from '@/stores/ui-store';
 export function ContactBand() {
   const t = useTranslate();
   const openContact = useUiStore((state) => state.openContact);
+  const isContactOpen = useUiStore((state) => state.isContactOpen);
+  const contactSource = useUiStore((state) => state.contactSource);
+
+  // Focus goes back the moment the store closes, not when the fade ends — the keyboard never
+  // waits on an animation (tech.md 9.3).
+  const ctaButton = useRef<HTMLButtonElement>(null);
+  const wasOpen = useRef(false);
+
+  useEffect(() => {
+    const isOpen = isContactOpen && contactSource === 'footer';
+    if (wasOpen.current && !isOpen) ctaButton.current?.focus();
+    wasOpen.current = isOpen;
+  }, [isContactOpen, contactSource]);
 
   // The band arrives as one object: the violet ground, the figure, the copy and the button are all
   // behind the same mask, and the mask slides off to the right. Wiping the children instead shows
@@ -27,6 +42,7 @@ export function ContactBand() {
 
         <div className="flex items-end">
           <CtaButton
+            ref={ctaButton}
             variant="inverted"
             onClick={() => {
               openContact('footer');

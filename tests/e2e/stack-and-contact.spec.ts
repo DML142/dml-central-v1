@@ -220,8 +220,11 @@ test.describe('contact form', () => {
   });
 
   test('restores focus and leaves the page scrollable on close', async ({ page }) => {
+    const trigger = page.getByRole('button', { name: 'Contact me now' });
+
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog')).toBeHidden();
+    await expect(trigger).toBeFocused();
 
     const canScroll = await page.evaluate(() => {
       const before = window.scrollY;
@@ -229,6 +232,19 @@ test.describe('contact form', () => {
       return window.scrollY !== before;
     });
     expect(canScroll).toBe(true);
+  });
+
+  test('restores focus to the footer trigger when opened from there', async ({ page }) => {
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toBeHidden();
+
+    const trigger = page.getByRole('button', { name: 'Contact', exact: false }).last();
+    await trigger.click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toBeHidden();
+    await expect(trigger).toBeFocused();
   });
 });
 
