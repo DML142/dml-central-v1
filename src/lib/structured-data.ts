@@ -1,4 +1,4 @@
-import { RAIL_LINKS, SITE } from '@/content/site';
+import { PERSON, RAIL_LINKS, SITE } from '@/content/site';
 
 const SOCIAL_LINK_IDS = ['github', 'telegram'];
 
@@ -6,11 +6,11 @@ export function buildPersonJsonLd(siteUrl: string) {
   return {
     '@context': 'https://schema.org',
     '@type': 'Person',
-    name: 'Maxim',
-    jobTitle: 'Full-stack engineer',
+    name: PERSON.name,
+    jobTitle: PERSON.jobTitle,
     url: siteUrl,
-    nationality: 'Ukraine',
-    knowsLanguage: ['uk', 'ru', 'en'],
+    nationality: PERSON.nationality,
+    knowsLanguage: PERSON.languages,
     sameAs: RAIL_LINKS.filter((link) => SOCIAL_LINK_IDS.includes(link.id)).map((link) => link.href),
   };
 }
