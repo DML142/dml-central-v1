@@ -3,8 +3,7 @@ import { expect, test, type Page } from '@playwright/test';
 
 import { gotoReady } from './support';
 
-// axe samples actual rendered pixels, so a section mid-fade reads as a blended, lower-contrast
-// colour. Reveals hold at exactly opacity 0 or 1 once settled (tech.md 9.2), so this is real.
+// axe samples rendered pixels, so a section mid-fade reads as a blended, lower-contrast colour.
 const waitForRevealsToSettle = (page: Page) =>
   expect
     .poll(() =>
@@ -17,8 +16,7 @@ const waitForRevealsToSettle = (page: Page) =>
     )
     .toBe(true);
 
-// A dialog is `toBeVisible()` the instant it mounts, but its own enter animation (tech.md 9.3)
-// is still running — the same race gallery.spec.ts's `openGallery` already waits out.
+// `toBeVisible()` fires before the enter animation finishes — the race gallery.spec.ts waits out.
 const waitForDialogSettled = (page: Page) =>
   page
     .getByRole('dialog')
