@@ -246,6 +246,17 @@ test.describe('contact form', () => {
     await expect(page.getByRole('dialog')).toBeHidden();
     await expect(trigger).toBeFocused();
   });
+
+  test('traps focus inside the dialog', async ({ page }) => {
+    for (let i = 0; i < 25; i += 1) {
+      await page.keyboard.press('Tab');
+      const inside = await page.evaluate(() => {
+        const dialog = document.querySelector('[role="dialog"]');
+        return dialog ? dialog.contains(document.activeElement) : false;
+      });
+      expect(inside).toBe(true);
+    }
+  });
 });
 
 test.describe('stack icons', () => {

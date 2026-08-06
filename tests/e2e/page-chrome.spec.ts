@@ -58,6 +58,61 @@ test.describe('page chrome', () => {
   });
 });
 
+test.describe('keyboard traversal', () => {
+  // tech.md §14 item 5: full keyboard traversal with no trap outside a modal. Every stop gets a
+  // stable probe id on first visit rather than being matched by text, so the assertion holds
+  // regardless of copy or item counts. What happens once Tab runs past the last control is
+  // engine-specific in headless mode — Chromium and WebKit wrap to the top, Firefox just stays on
+  // the last element — so the contract checked here is reachability and a visible ring on the way,
+  // not a specific wrap target.
+  test('reaches every control, each with a visible ring, and never traps midway', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await gotoReady(page, '/');
+
+    const expectedOutlineColor = await page.evaluate(() => {
+      const probe = document.createElement('div');
+      probe.style.color = 'var(--color-violet-bright)';
+      document.body.appendChild(probe);
+      const rgb = getComputedStyle(probe).color;
+      probe.remove();
+      return rgb;
+    });
+
+    const seen: string[] = [];
+
+    for (let i = 0; i < 40; i += 1) {
+      await page.keyboard.press('Tab');
+
+      const step = await page.evaluate(() => {
+        const el = document.activeElement as HTMLElement | null;
+        if (!el || el === document.body) return null;
+        if (!el.dataset.kbProbe) el.dataset.kbProbe = crypto.randomUUID();
+        const style = getComputedStyle(el);
+        return {
+          id: el.dataset.kbProbe,
+          outlineStyle: style.outlineStyle,
+          outlineColor: style.outlineColor,
+        };
+      });
+
+      if (!step) continue; // the natural gap between the last control and the wrap
+
+      if (seen.includes(step.id)) break; // reached the natural end, wrapped or parked
+
+      expect(step.outlineStyle, `no visible ring at step ${i}`).toBe('solid');
+      expect(step.outlineColor, `wrong ring colour at step ${i}`).toBe(expectedOutlineColor);
+      seen.push(step.id);
+    }
+
+    // Chrome, hero CTA, both project cards, six stack triggers, footer CTA — 21 today. The upper
+    // bound catches a trap bouncing between an unexpectedly large but wrong subset.
+    expect(seen.length).toBeGreaterThan(15);
+    expect(seen.length).toBeLessThan(25);
+  });
+});
+
 test.describe('locale switching', () => {
   test('swaps the copy and the document language', async ({ page }) => {
     await gotoReady(page, '/');
