@@ -1,4 +1,5 @@
 import { cva, type VariantProps } from 'class-variance-authority';
+import Link from 'next/link';
 
 import { cn } from '@/lib/utils';
 
@@ -20,13 +21,35 @@ const cta = cva(
 
 type Variants = VariantProps<typeof cta>;
 
-interface Props extends React.ComponentProps<'button'>, Variants {
+interface ButtonProps extends React.ComponentProps<'button'>, Variants {
+  children: React.ReactNode;
+  href?: undefined;
+}
+
+interface LinkProps extends React.ComponentProps<typeof Link>, Variants {
   children: React.ReactNode;
 }
 
-export function CtaButton({ children, variant, className, type = 'button', ...props }: Props) {
+type Props = ButtonProps | LinkProps;
+
+// A real `<a>`/`Link` when navigating, a `<button>` otherwise — one visual pattern, one component
+// (tech.md 6.3), rather than hand-copying the classes at each call site that needs to navigate.
+export function CtaButton({ children, variant, className, ...props }: Props) {
+  const classes = cn(cta({ variant }), className);
+
+  if ('href' in props && props.href !== undefined) {
+    return (
+      <Link className={classes} {...props}>
+        {children}
+        <span aria-hidden="true">→</span>
+        <span aria-hidden="true" className="cta-rule" />
+      </Link>
+    );
+  }
+
+  const { type = 'button', ...buttonProps } = props as ButtonProps;
   return (
-    <button type={type} className={cn(cta({ variant }), className)} {...props}>
+    <button type={type} className={classes} {...buttonProps}>
       {children}
       <span aria-hidden="true">→</span>
       <span aria-hidden="true" className="cta-rule" />

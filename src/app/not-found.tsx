@@ -1,5 +1,4 @@
-import Link from 'next/link';
-
+import { CtaButton } from '@/components/common/CtaButton';
 import { Eyebrow } from '@/components/common/Eyebrow';
 
 // Rendered before the locale is known, same reasoning as metadata (tech.md 19.4) — English only.
@@ -11,13 +10,7 @@ export default function NotFound() {
       <p className="text-text-muted max-w-copy">
         There is nothing at this address. The rest of the page still works.
       </p>
-      <Link
-        href="/"
-        className="micro border-violet bg-violet text-void hover:border-violet-bright hover:bg-violet-bright inline-flex min-h-11 items-center gap-6 border px-(--cta-pad-x) py-3 font-medium no-underline transition-colors duration-(--dur-fast)"
-      >
-        Back home
-        <span aria-hidden="true">→</span>
-      </Link>
+      <CtaButton href="/">Back home</CtaButton>
     </section>
   );
 }
