@@ -17,7 +17,7 @@ it prints breaks the no-console-noise rule the project holds itself to.
 
 ## Requirements
 
-- Node.js 20 or newer
+- Node.js 25
 - pnpm 11
 
 ## Setup
@@ -43,24 +43,27 @@ test fixture.
 
 ## Scripts
 
-| Script            | What it does                                |
-| ----------------- | ------------------------------------------- |
-| `pnpm dev`        | Dev server                                  |
-| `pnpm build`      | Production build                            |
-| `pnpm start`      | Serve the production build                  |
-| `pnpm typecheck`  | `tsc --noEmit`                              |
-| `pnpm lint`       | ESLint over the repository                  |
-| `pnpm lint:fix`   | ESLint with `--fix`                         |
-| `pnpm format`     | Prettier over the repository                |
-| `pnpm test`       | Vitest unit and component tests             |
-| `pnpm test:watch` | Vitest in watch mode                        |
-| `pnpm test:e2e`   | Playwright, builds and serves the app first |
+| Script                    | What it does                                                                 |
+| ------------------------- | ---------------------------------------------------------------------------- |
+| `pnpm dev`                | Dev server                                                                   |
+| `pnpm build`              | Production build                                                             |
+| `pnpm start`              | Serve the production build                                                   |
+| `pnpm typecheck`          | `tsc --noEmit`                                                               |
+| `pnpm lint`               | ESLint over the repository                                                   |
+| `pnpm lint:fix`           | ESLint with `--fix`                                                          |
+| `pnpm format`             | Prettier over the repository                                                 |
+| `pnpm format:check`       | Prettier, check only, no writes                                              |
+| `pnpm test` / `test:unit` | Vitest unit and component tests (same command, CI calls `test:unit`)         |
+| `pnpm test:watch`         | Vitest in watch mode                                                         |
+| `pnpm test:e2e`           | Playwright, builds and serves the app first                                  |
+| `pnpm lighthouse`         | Production build, then Lighthouse CI against the budget in `lighthouserc.js` |
 
 Playwright needs its browsers once: `pnpm exec playwright install`.
 
 ## Layout
 
 ```
+.github/workflows/ CI pipeline: install, typecheck, lint, unit, build, e2e
 docs/adr/          Architecture decision records
 prototype/         Throwaway static HTML that locked the layout; deleted after phase 3
 public/            Self-hosted fonts, project screenshots, OG assets
@@ -72,6 +75,7 @@ src/lib/           Pure logic: three (field simulation), motion (reveal planning
                    validation, env, utils
 src/stores/        Zustand stores
 src/content/       Typed content and the three locale dictionaries
+src/types/         Shared type definitions
 src/config/        Motion, breakpoints, particle parameters
 tests/unit/        Vitest
 tests/e2e/         Playwright
@@ -89,4 +93,5 @@ after changing the icon map at the top of it.
 Husky runs `lint-staged` and `tsc --noEmit` before every commit, and the unit tests before every
 push. A commit that fails the hooks is not a commit.
 
-Branch per slice, Conventional Commits, PR into `main`. Nothing lands on `main` directly.
+Branch per slice, Conventional Commits, PR into `main`. Nothing lands on `main` directly. CI runs
+the full pipeline on every push and PR; a merge is blocked while it's red.
